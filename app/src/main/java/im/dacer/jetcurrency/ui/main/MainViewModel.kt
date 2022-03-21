@@ -1,0 +1,225 @@
+package im.dacer.jetcurrency.ui.main
+
+import android.content.Context
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.toMutableStateMap
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import im.dacer.jetcurrency.R
+import im.dacer.jetcurrency.data.CurrencyRepository
+import im.dacer.jetcurrency.data.Result
+import im.dacer.jetcurrency.di.MainDispatcher
+import im.dacer.jetcurrency.model.Currency
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
+
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val repository: CurrencyRepository,
+    @MainDispatcher private val mainDispatcher: CoroutineDispatcher
+) : ViewModel() {
+
+    private val viewModelState = MutableStateFlow(MainViewModelState(isLoading = true))
+
+    val shownCurrencyList = repository
+        .getShowingCurrencies()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            listOf()
+        )
+
+    val currencyList = repository
+        .getAllCurrencies()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            listOf()
+        )
+
+    val uiState = viewModelState
+        .map { it.toUiState() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            viewModelState.value.toUiState()
+        )
+
+    fun setFocusedCurrency(currencyCode: String) {
+        viewModelState.update {
+            it.copy(
+                focusedCurrencyCode = currencyCode,
+                dataMap = it.dataMap.mapValues { Currency.Data() }.toMutableStateMap()
+            )
+        }
+    }
+
+    fun onErrorMessageDismissed() {
+        viewModelState.update { it.copy(errorMessage = null) }
+    }
+
+    /**
+     * char can be a number or a symbol like +, *, -, /
+     */
+    fun addCharToCurrentAmount(c: Char) {
+        viewModelState.update { currentUiState ->
+            val currencyCode = currentUiState.focusedCurrencyCode ?: return
+            val currentData = currentUiState.dataMap[currencyCode] ?: return
+
+            currentUiState.copy(
+                dataMap = updateDataMap(
+                    currentUiState.dataMap,
+                    currencyCode,
+                    currentData.addToExpression(c),
+                    currencyList.value,
+                )
+            )
+        }
+    }
+
+    fun onClickBackspace() {
+        viewModelState.update { currentUiState ->
+            val currencyCode = currentUiState.focusedCurrencyCode ?: return
+            val currentData = currentUiState.dataMap[currencyCode] ?: return
+            currentUiState.copy(
+                dataMap = updateDataMap(
+                    currentUiState.dataMap,
+                    currencyCode,
+                    currentData.deleteLastStrInExpression(),
+                    currencyList.value,
+                )
+            )
+        }
+    }
+
+    fun onCurrencyInSelectorClicked(currencyCode: String) = viewModelScope.launch(mainDispatcher) {
+        val clickedCurrency = currencyList.value.find { it.code == currencyCode } ?: return@launch
+        if (clickedCurrency.isShowing) {
+            repository.updateCurrencies(clickedCurrency.setOrder(null))
+        } else {
+            val maxOrder = currencyList.value.maxByOrNull { it.order ?: -1 }?.order ?: 0
+            repository.updateCurrencies(clickedCurrency.setOrder(maxOrder + 1))
+        }
+    }
+
+    fun refreshCurrencyData() = viewModelScope.launch(mainDispatcher) {
+        viewModelState.update { it.copy(isLoading = true) }
+        var errorMessage: String? = null
+
+        try {
+            val result = repository.refreshData()
+            when (result) {
+                is Result.Error -> {
+                    errorMessage = context.getString(
+                        R.string.currencylayer_api_request_error_message,
+                        result.exception.message
+                    )
+                }
+                is Result.Success -> {
+                    // initialize shownCurrencyList if need
+                    if (shownCurrencyList.value.isEmpty()) {
+                        repository.updateCurrencies(
+                            currencyList.value.find { it.code == DEFAULT_CURRENCY_1 }?.setOrder(0),
+                            currencyList.value.find { it.code == DEFAULT_CURRENCY_2 }?.setOrder(1),
+                        )
+                    }
+                    // initialize DataMap if need
+                    if (viewModelState.value.dataMap.isEmpty()) {
+                        viewModelState.update {
+                            it.copy(
+                                dataMap = updateDataMap(
+                                    emptyMap<String, Currency.Data>().toMutableStateMap(),
+                                    DEFAULT_CURRENCY_1,
+                                    Currency.Data(),
+                                    currencyList.value,
+                                )
+                            )
+                        }
+                    }
+                    // set focused currency if need
+                    if (viewModelState.value.focusedCurrencyCode == null) {
+                        viewModelState.update {
+                            val focusedCode = if (shownCurrencyList.value.isEmpty()) {
+                                DEFAULT_CURRENCY_1
+                            } else {
+                                shownCurrencyList.value.first().code
+                            }
+                            it.copy(focusedCurrencyCode = focusedCode)
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        } finally {
+            viewModelState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+        }
+    }
+
+    /**
+     * Update focused currency with focused data, also update other currencies data with latest data
+     */
+    private fun updateDataMap(
+        dataMap: SnapshotStateMap<String, Currency.Data>,
+        focusedCurrencyCode: String,
+        focusedData: Currency.Data,
+        currencyList: List<Currency>,
+    ): SnapshotStateMap<String, Currency.Data> {
+        val focusedCurrency = currencyList.find { it.code == focusedCurrencyCode } ?: return dataMap
+
+        return currencyList.map {
+            return@map when {
+                it.code == focusedCurrencyCode -> {
+                    Pair(it.code, focusedData)
+                }
+                it.isShowing -> {
+                    Pair(it.code, Currency.Data.Build(it, focusedCurrency, focusedData.value))
+                }
+                else -> {
+                    Pair(it.code, Currency.Data.Build(it, focusedCurrency, focusedData.value))
+                    // Pair(it.code, dataMap[it.code] ?: Currency.Data())
+                }
+            }
+        }.toMutableStateMap()
+    }
+
+    companion object {
+        const val DEFAULT_CURRENCY_1 = "USD"
+        const val DEFAULT_CURRENCY_2 = "JPY"
+    }
+}
+
+/**
+ * UI state for the Main Screen.
+ */
+private data class MainViewModelState(
+    val dataMap: SnapshotStateMap<String, Currency.Data> = mutableStateMapOf(),
+    val focusedCurrencyCode: String? = null,
+    val isLoading: Boolean,
+    val errorMessage: String? = null,
+) {
+    fun toUiState(): MainUiState =
+        if (dataMap.isEmpty()) {
+            MainUiState.NoData(
+                isLoading = isLoading,
+                errorMessage = errorMessage,
+            )
+        } else {
+            MainUiState.HasData(
+                isLoading = isLoading,
+                errorMessage = errorMessage,
+                dataMap = dataMap,
+                focusedCurrencyCode = focusedCurrencyCode,
+            )
+        }
+}
+
+private fun <K, V> Map<out K, V>.toMutableStateMap(): SnapshotStateMap<K, V> =
+    toList().toMutableStateMap()

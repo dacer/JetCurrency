@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Currency</string>
+    <string name="currencylayer_api_request_error_message">Can not get currency data from currencylayer (%1$s)</string>
+</resources>

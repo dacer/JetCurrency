@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ TODO: delete this file after upgrading plan.
+
+ Since currencylayer do not allow free users to use HTTPS requests,
+ we have to allow HTTP requests with currencylayer.
+ -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">api.currencylayer.com</domain>
+    </domain-config>
+</network-security-config>
