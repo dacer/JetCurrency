@@ -36,7 +36,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import im.dacer.jetcurrency.model.Currency
 import im.dacer.jetcurrency.ui.components.factory.CurrencyFactory
 import im.dacer.jetcurrency.ui.main.MainUiState
@@ -211,7 +212,7 @@ private fun PortraitMainLayout(
                 uiState.isLoading,
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .systemBarsPadding(top = false),
+                    .navigationBarsPadding(start = false),
                 onClickCalculatorButton = onClickCalculatorButton,
                 onClickBackspace = onClickBackspace,
                 onClickSettings = onClickSettings,
@@ -260,7 +261,8 @@ private fun LandscapeMainLayout(
                 uiState.isLoading,
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .systemBarsPadding(),
+                    .statusBarsPadding()
+                    .navigationBarsPadding(start = false),
                 onClickCalculatorButton = onClickCalculatorButton,
                 onClickBackspace = onClickBackspace,
                 onClickSettings = onClickSettings,
