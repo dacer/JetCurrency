@@ -18,6 +18,24 @@ class CurrencyFactory {
             exchangeRateFromUsd = 1.0,
         )
 
+        val BTC = Currency(
+            code = "BTC",
+            fullName = "Bitcoin",
+            exchangeRateFromUsd = 0.000022,
+        )
+
+        val HKD = Currency(
+            code = "HKD",
+            fullName = "Hong Kong dollar",
+            exchangeRateFromUsd = 7.833148,
+        )
+
+        val CNY = Currency(
+            code = "CNY",
+            fullName = "Chinese Yuan",
+            exchangeRateFromUsd = 6.339821,
+        )
+
         val DataMap: Map<String, Currency.Data> = mapOf(
             "JPY" to Currency.Data(230.45008),
             "USD" to Currency.Data(2.0)

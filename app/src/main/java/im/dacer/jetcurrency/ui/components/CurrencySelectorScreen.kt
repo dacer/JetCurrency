@@ -5,13 +5,17 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -30,12 +34,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.systemBarsPadding
 import im.dacer.jetcurrency.model.Currency
+import im.dacer.jetcurrency.ui.components.factory.CurrencyFactory
 import im.dacer.jetcurrency.ui.main.MainUiState
+import im.dacer.jetcurrency.utils.WindowSize
 
 @ExperimentalFoundationApi
 @ExperimentalMaterial3Api
@@ -43,7 +50,8 @@ import im.dacer.jetcurrency.ui.main.MainUiState
 fun CurrencySelectorScreen(
     uiState: MainUiState,
     currencyList: List<Currency>,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    isPortrait: Boolean = true,
     onBackClicked: () -> Unit,
     onSearchClicked: () -> Unit,
     onCurrencyClicked: (currencyCode: String) -> Unit,
@@ -53,7 +61,9 @@ fun CurrencySelectorScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
     }
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .systemBarsPadding(top = false, bottom = false),
         topBar = {
             LargeTopAppBar(
                 title = { Text("Choose currencies") },
@@ -80,14 +90,28 @@ fun CurrencySelectorScreen(
         content = { innerPadding ->
             when (uiState) {
                 is MainUiState.HasData -> {
-                    CurrencySelector(
-                        currencyList = currencyList,
-                        innerPadding = innerPadding,
-                        onCurrencyClicked = onCurrencyClicked,
-                    )
+                    if (isPortrait) {
+                        CurrencySelector(
+                            currencyList = currencyList,
+                            innerPadding = innerPadding,
+                            onCurrencyClicked = onCurrencyClicked,
+                        )
+                    } else {
+                        LandscapeCurrencySelector(
+                            currencyList = currencyList,
+                            innerPadding = innerPadding,
+                            onCurrencyClicked = onCurrencyClicked,
+                        )
+                    }
                 }
                 is MainUiState.NoData -> {
-                    Text(text = "No Data")
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "No Data",
+                            modifier = Modifier.align(Alignment.Center),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
                 }
             }
         }
@@ -96,7 +120,7 @@ fun CurrencySelectorScreen(
 
 @ExperimentalFoundationApi
 @Composable
-fun CurrencySelector(
+private fun CurrencySelector(
     currencyList: List<Currency>,
     innerPadding: PaddingValues,
     onCurrencyClicked: (currencyCode: String) -> Unit,
@@ -120,8 +144,31 @@ fun CurrencySelector(
     }
 }
 
+@ExperimentalFoundationApi
 @Composable
-fun CurrencyRow(currency: Currency, modifier: Modifier = Modifier, onClicked: () -> Unit) {
+private fun LandscapeCurrencySelector(
+    currencyList: List<Currency>,
+    innerPadding: PaddingValues,
+    onCurrencyClicked: (currencyCode: String) -> Unit,
+) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        contentPadding = innerPadding
+    ) {
+        items(
+            currencyList.sortedBy { if (it.order != null) it.order else Int.MAX_VALUE },
+            key = { it.code }
+        ) { currency ->
+            CurrencyRow(
+                currency = currency,
+                modifier = Modifier.animateItemPlacement(),
+            ) { onCurrencyClicked.invoke(currency.code) }
+        }
+    }
+}
+
+@Composable
+private fun CurrencyRow(currency: Currency, modifier: Modifier = Modifier, onClicked: () -> Unit) {
     val selected = currency.isShowing
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -183,4 +230,62 @@ private fun PreviewSelectedCurrencyRow() {
         ),
         onClicked = {}
     )
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Preview("No data")
+@Composable
+private fun PreviewNoData(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
+    CurrencySelectorScreen(
+        uiState = MainUiState.NoData(
+            isLoading = false,
+            errorMessage = null,
+        ),
+        currencyList = listOf(),
+        onBackClicked = {},
+        onSearchClicked = {},
+        onCurrencyClicked = {},
+    )
+}
+
+@ExperimentalFoundationApi
+@ExperimentalMaterial3Api
+@Preview("CurrencySelector")
+@Composable
+private fun PreviewCurrencySelector(
+    isPortrait: Boolean = true,
+    heightWindowSize: WindowSize = WindowSize.MEDIUM
+) {
+    CurrencySelectorScreen(
+        uiState = MainUiState.HasData(
+            isLoading = false,
+            errorMessage = null,
+            dataMap = mapOf(),
+            focusedCurrencyCode = "USD",
+        ),
+        currencyList = listOf(
+            CurrencyFactory.JPY.setOrder(0),
+            CurrencyFactory.USD,
+            CurrencyFactory.BTC,
+            CurrencyFactory.HKD,
+            CurrencyFactory.CNY,
+        ),
+        isPortrait = isPortrait,
+        onBackClicked = {},
+        onSearchClicked = {},
+        onCurrencyClicked = {},
+    )
+}
+
+@ExperimentalFoundationApi
+@ExperimentalMaterial3Api
+@Preview(
+    "CurrencySelector (Landscape)",
+    device = Devices.AUTOMOTIVE_1024p,
+    widthDp = 1024,
+    heightDp = 360
+)
+@Composable
+private fun PreviewLandscapeCurrencySelector() {
+    PreviewCurrencySelector(isPortrait = false)
 }

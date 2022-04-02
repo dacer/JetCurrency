@@ -161,6 +161,7 @@ private fun MainScreen(
                 uiState = uiState,
                 currencyList = currencyList,
                 modifier = Modifier.fillMaxHeight(),
+                isPortrait = heightWindowSize != WindowSize.COMPACT,
                 onBackClicked = onCurrencySelectorBack,
                 onSearchClicked = onCurrencySelectorSearch,
                 onCurrencyClicked = onCurrencySelectorClicked,
@@ -324,39 +325,3 @@ private fun PreviewRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
     )
 }
 
-@ExperimentalFoundationApi
-@ExperimentalMaterial3Api
-@Preview("Currency selector screen")
-@Composable
-private fun PreviewCurrencySelector(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
-    MainScreen(
-        uiState = MainUiState.HasData(
-            isLoading = false,
-            errorMessage = null,
-            dataMap = mapOf(),
-            focusedCurrencyCode = "USD",
-        ),
-        heightWindowSize = heightWindowSize,
-        shownCurrencyList = listOf(
-            CurrencyFactory.USD,
-            CurrencyFactory.JPY,
-        ),
-        currencyList = listOf(
-            CurrencyFactory.USD,
-            CurrencyFactory.JPY.setOrder(0),
-        ),
-        showNotImplementedAlert = false,
-        showCurrencySelector = true,
-        snackbarHostState = SnackbarHostState(),
-        onClickCalculatorButton = {},
-        onClickBackspace = {},
-        onClickSettings = {},
-        onClickRefresh = {},
-        onDismissNotImplementedAlert = {},
-        onFocusCurrencyItem = {},
-        onClickFilterCurrency = {},
-        onCurrencySelectorBack = {},
-        onCurrencySelectorSearch = {},
-        onCurrencySelectorClicked = {},
-    )
-}
