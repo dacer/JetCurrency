@@ -27,7 +27,7 @@ data class Currency(
     }
 
     /**
-     * return the amount in this currency converted from $amount in $currency
+     * return the amount in this currency converted from [amount] in [currency]
      */
     fun convertFrom(amount: Double, currency: Currency): Double {
         val currentUsdAmount = amount / currency.exchangeRateFromUsd
