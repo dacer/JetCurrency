@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,15 +28,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.statusBarsHeight
 import im.dacer.jetcurrency.model.Currency
 import im.dacer.jetcurrency.ui.main.MainUiState
 
 @Composable
 fun CurrencyList(
     mainUiState: MainUiState,
-    shownCurrencyList: List<Currency>,
     modifier: Modifier = Modifier,
+    shownCurrencyList: List<Currency>,
+    footerSpacerHeight: Dp? = null,
+    extraEndPadding: Dp = 0.dp,
+    addStatusBarPadding: Boolean = true,
     onClickCurrencyItem: (code: String) -> Unit
 ) {
     when (mainUiState) {
@@ -45,14 +51,21 @@ fun CurrencyList(
                     .fillMaxSize()
                     .then(modifier)
             ) {
+                if (addStatusBarPadding) {
+                    item { Spacer(modifier = Modifier.statusBarsHeight()) }
+                }
                 items(shownCurrencyList) { c ->
                     CurrencyItem(
                         code = c.code,
                         fullName = c.fullName,
                         amount = mainUiState.dataMap[c.code]?.displayValue ?: "0",
                         isFocused = mainUiState.focusedCurrencyCode == c.code,
+                        extraEndPadding = extraEndPadding,
                         onClickCurrencyItem = onClickCurrencyItem
                     )
+                }
+                footerSpacerHeight?.let {
+                    item { Spacer(modifier = Modifier.height(it)) }
                 }
             }
         }
@@ -69,6 +82,7 @@ fun CurrencyList(
                     repeatMode = RepeatMode.Reverse
                 )
             )
+            if (addStatusBarPadding) Spacer(modifier = Modifier.statusBarsHeight())
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -103,6 +117,7 @@ private fun CurrencyItem(
     fullName: String,
     amount: String = "",
     isFocused: Boolean = false,
+    extraEndPadding: Dp = 0.dp,
     onClickCurrencyItem: (code: String) -> Unit = {}
 ) {
     Row(
@@ -111,7 +126,7 @@ private fun CurrencyItem(
             .fillMaxWidth()
             .clickable { onClickCurrencyItem.invoke(code) }
             .background(if (isFocused) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-            .padding(start = 22.dp, end = 22.dp, top = 16.dp, bottom = 16.dp)
+            .padding(start = 22.dp, end = 22.dp + extraEndPadding, top = 16.dp, bottom = 16.dp)
     ) {
         val fontColor =
             if (isFocused) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground

@@ -11,8 +11,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,24 +34,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.systemBarsPadding
 import im.dacer.jetcurrency.model.Currency
 import im.dacer.jetcurrency.ui.components.factory.CurrencyFactory
 import im.dacer.jetcurrency.ui.main.MainUiState
 import im.dacer.jetcurrency.ui.main.MainViewModel
-import im.dacer.jetcurrency.ui.theme.CurrencyTheme
+import im.dacer.jetcurrency.utils.WindowSize
 
 @ExperimentalFoundationApi
 @ExperimentalMaterial3Api
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    heightWindowSize: WindowSize,
+) {
     val uiState by viewModel.uiState.collectAsState()
     val shownCurrencyList by viewModel.shownCurrencyList.collectAsState()
     val currencyList by viewModel.currencyList.collectAsState()
     var showNotImplementedAlert by remember { mutableStateOf(false) }
     var showCurrencySelector by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val overlappingLength by remember { mutableStateOf(16.dp) }
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
@@ -70,11 +77,13 @@ fun MainScreen(viewModel: MainViewModel) {
 
     MainScreen(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        heightWindowSize = heightWindowSize,
         shownCurrencyList = shownCurrencyList,
         currencyList = currencyList,
         showNotImplementedAlert = showNotImplementedAlert,
         showCurrencySelector = showCurrencySelector,
-        snackbarHostState = snackbarHostState,
+        overlappingLength = overlappingLength,
         onClickCalculatorButton = viewModel::addCharToCurrentAmount,
         onClickBackspace = viewModel::onClickBackspace,
         onClickSettings = { showNotImplementedAlert = true },
@@ -93,11 +102,13 @@ fun MainScreen(viewModel: MainViewModel) {
 @Composable
 private fun MainScreen(
     uiState: MainUiState,
+    snackbarHostState: SnackbarHostState,
+    heightWindowSize: WindowSize,
     shownCurrencyList: List<Currency>,
     currencyList: List<Currency>,
     showNotImplementedAlert: Boolean,
     showCurrencySelector: Boolean,
-    snackbarHostState: SnackbarHostState,
+    overlappingLength: Dp = 0.dp,
     onClickCalculatorButton: (Char) -> Unit,
     onClickBackspace: () -> Unit,
     onClickSettings: () -> Unit,
@@ -109,64 +120,167 @@ private fun MainScreen(
     onCurrencySelectorSearch: () -> Unit,
     onCurrencySelectorClicked: (currencyCode: String) -> Unit,
 ) {
-    CurrencyTheme {
-        Box {
-            Column(
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .statusBarsPadding()
-                    .fillMaxHeight()
-            ) {
-                CurrencyList(
-                    uiState,
-                    shownCurrencyList = shownCurrencyList,
-                    modifier = Modifier.weight(1f),
-                    onClickCurrencyItem = onFocusCurrencyItem
-                )
-                Surface(
-                    shadowElevation = 8.dp,
-                    tonalElevation = 8.dp,
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                    )
-                ) {
-                    CalculatorLayout(
-                        uiState.isLoading,
-                        onClickCalculatorButton = onClickCalculatorButton,
-                        onClickBackspace = onClickBackspace,
-                        onClickSettings = onClickSettings,
-                        onClickRefresh = onClickRefresh,
-                        onClickFilterCurrency = onClickFilterCurrency,
-                    )
-                }
-            }
-            AnimatedVisibility(
-                visible = showCurrencySelector,
-                enter = slideInVertically(
-                    initialOffsetY = { fullHeight -> -fullHeight },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    ),
+    Box {
+        if (heightWindowSize == WindowSize.COMPACT) {
+            LandscapeMainLayout(
+                uiState,
+                shownCurrencyList,
+                overlappingLength,
+                onFocusCurrencyItem,
+                onClickCalculatorButton,
+                onClickBackspace,
+                onClickSettings,
+                onClickRefresh,
+                onClickFilterCurrency
+            )
+        } else {
+            PortraitMainLayout(
+                uiState,
+                shownCurrencyList,
+                overlappingLength,
+                onFocusCurrencyItem,
+                onClickCalculatorButton,
+                onClickBackspace,
+                onClickSettings,
+                onClickRefresh,
+                onClickFilterCurrency
+            )
+        }
+        AnimatedVisibility(
+            visible = showCurrencySelector,
+            enter = slideInVertically(
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow
                 ),
-                exit = slideOutVertically() + shrinkVertically() + fadeOut(),
-            ) {
-                CurrencySelectorScreen(
-                    uiState = uiState,
-                    currencyList = currencyList,
-                    modifier = Modifier.fillMaxHeight(),
-                    onBackClicked = onCurrencySelectorBack,
-                    onSearchClicked = onCurrencySelectorSearch,
-                    onCurrencyClicked = onCurrencySelectorClicked,
-                )
-            }
-            if (showNotImplementedAlert) {
-                NotImplementedAlert(onDismiss = onDismissNotImplementedAlert)
-            }
-            SnackbarHost(hostState = snackbarHostState)
+            ),
+            exit = slideOutVertically() + shrinkVertically() + fadeOut(),
+        ) {
+            CurrencySelectorScreen(
+                uiState = uiState,
+                currencyList = currencyList,
+                modifier = Modifier.fillMaxHeight(),
+                onBackClicked = onCurrencySelectorBack,
+                onSearchClicked = onCurrencySelectorSearch,
+                onCurrencyClicked = onCurrencySelectorClicked,
+            )
+        }
+        if (showNotImplementedAlert) {
+            NotImplementedAlert(onDismiss = onDismissNotImplementedAlert)
+        }
+        SnackbarHost(hostState = snackbarHostState)
+    }
+}
+
+@Composable
+private fun PortraitMainLayout(
+    uiState: MainUiState,
+    shownCurrencyList: List<Currency>,
+    overlappingLength: Dp,
+    onFocusCurrencyItem: (currencyCode: String) -> Unit,
+    onClickCalculatorButton: (Char) -> Unit,
+    onClickBackspace: () -> Unit,
+    onClickSettings: () -> Unit,
+    onClickRefresh: () -> Unit,
+    onClickFilterCurrency: () -> Unit
+) {
+    Column(
+        Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.spacedBy(-overlappingLength)
+    ) {
+        CurrencyList(
+            uiState,
+            modifier = Modifier.weight(1f),
+            footerSpacerHeight = overlappingLength,
+            shownCurrencyList = shownCurrencyList,
+            onClickCurrencyItem = onFocusCurrencyItem
+        )
+        Surface(
+            shadowElevation = 8.dp,
+            tonalElevation = 8.dp,
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+            )
+        ) {
+            CalculatorLayout(
+                uiState.isLoading,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .systemBarsPadding(top = false),
+                onClickCalculatorButton = onClickCalculatorButton,
+                onClickBackspace = onClickBackspace,
+                onClickSettings = onClickSettings,
+                onClickRefresh = onClickRefresh,
+                onClickFilterCurrency = onClickFilterCurrency,
+            )
         }
     }
+}
+
+@Composable
+private fun LandscapeMainLayout(
+    uiState: MainUiState,
+    shownCurrencyList: List<Currency>,
+    overlappingLength: Dp,
+    onFocusCurrencyItem: (currencyCode: String) -> Unit,
+    onClickCalculatorButton: (Char) -> Unit,
+    onClickBackspace: () -> Unit,
+    onClickSettings: () -> Unit,
+    onClickRefresh: () -> Unit,
+    onClickFilterCurrency: () -> Unit
+) {
+    Row(
+        Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxHeight(),
+        horizontalArrangement = Arrangement.spacedBy(-overlappingLength)
+    ) {
+        CurrencyList(
+            uiState,
+            modifier = Modifier.weight(1f),
+            shownCurrencyList = shownCurrencyList,
+            extraEndPadding = overlappingLength,
+            onClickCurrencyItem = onFocusCurrencyItem
+        )
+        Surface(
+            shadowElevation = 8.dp,
+            tonalElevation = 8.dp,
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                bottomStart = 16.dp,
+            ),
+            modifier = Modifier.weight(1f),
+        ) {
+            CalculatorLayout(
+                uiState.isLoading,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .systemBarsPadding(),
+                onClickCalculatorButton = onClickCalculatorButton,
+                onClickBackspace = onClickBackspace,
+                onClickSettings = onClickSettings,
+                onClickRefresh = onClickRefresh,
+                onClickFilterCurrency = onClickFilterCurrency,
+            )
+        }
+    }
+}
+
+@ExperimentalFoundationApi
+@ExperimentalMaterial3Api
+@Preview(
+    "Main screen (Landscape)",
+    device = Devices.AUTOMOTIVE_1024p,
+    widthDp = 1024,
+    heightDp = 360
+)
+@Composable
+private fun PreviewLandscapeRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
+    PreviewRoot(heightWindowSize = WindowSize.COMPACT)
 }
 
 @ExperimentalFoundationApi
@@ -177,9 +291,10 @@ private fun MainScreen(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = Devices.NEXUS_7_2013
 )
+@Preview("Home screen (Tablet)", device = Devices.PIXEL_C)
 @Preview("Main screen (big font)", fontScale = 1.5f, device = Devices.NEXUS_7_2013)
 @Composable
-private fun PreviewRoot() {
+private fun PreviewRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
     MainScreen(
         uiState = MainUiState.HasData(
             isLoading = false,
@@ -187,6 +302,7 @@ private fun PreviewRoot() {
             dataMap = CurrencyFactory.DataMap,
             focusedCurrencyCode = "USD",
         ),
+        heightWindowSize = heightWindowSize,
         shownCurrencyList = listOf(
             CurrencyFactory.USD,
             CurrencyFactory.JPY,
@@ -212,7 +328,7 @@ private fun PreviewRoot() {
 @ExperimentalMaterial3Api
 @Preview("Currency selector screen")
 @Composable
-private fun PreviewCurrencySelector() {
+private fun PreviewCurrencySelector(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
     MainScreen(
         uiState = MainUiState.HasData(
             isLoading = false,
@@ -220,11 +336,15 @@ private fun PreviewCurrencySelector() {
             dataMap = mapOf(),
             focusedCurrencyCode = "USD",
         ),
+        heightWindowSize = heightWindowSize,
         shownCurrencyList = listOf(
             CurrencyFactory.USD,
             CurrencyFactory.JPY,
         ),
-        currencyList = listOf(),
+        currencyList = listOf(
+            CurrencyFactory.USD,
+            CurrencyFactory.JPY.setOrder(0),
+        ),
         showNotImplementedAlert = false,
         showCurrencySelector = true,
         snackbarHostState = SnackbarHostState(),

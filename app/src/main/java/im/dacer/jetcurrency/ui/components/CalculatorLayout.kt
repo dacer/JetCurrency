@@ -7,7 +7,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.systemBarsPadding
 import im.dacer.jetcurrency.R
 
 private val calculatorColumns = listOf(
@@ -47,6 +45,7 @@ private val buttonHeight = 55.dp
 @Composable
 fun CalculatorLayout(
     isLoading: Boolean,
+    modifier: Modifier = Modifier,
     onClickCalculatorButton: (Char) -> Unit,
     onClickBackspace: () -> Unit,
     onClickSettings: () -> Unit,
@@ -54,9 +53,7 @@ fun CalculatorLayout(
     onClickFilterCurrency: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .systemBarsPadding(top = false)
+        modifier = modifier
             .padding(top = 18.dp, bottom = 18.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {

@@ -10,6 +10,8 @@ import androidx.core.view.WindowCompat
 import com.google.accompanist.insets.ProvideWindowInsets
 import dagger.hilt.android.AndroidEntryPoint
 import im.dacer.jetcurrency.ui.components.MainScreen
+import im.dacer.jetcurrency.ui.theme.CurrencyTheme
+import im.dacer.jetcurrency.utils.rememberWindowSize
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -22,8 +24,11 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            ProvideWindowInsets {
-                MainScreen(viewModel)
+            val (widthWindowSize, heightWindowSize) = rememberWindowSize()
+            CurrencyTheme {
+                ProvideWindowInsets {
+                    MainScreen(viewModel, heightWindowSize)
+                }
             }
         }
     }
