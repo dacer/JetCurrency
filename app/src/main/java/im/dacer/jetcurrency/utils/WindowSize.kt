@@ -48,6 +48,7 @@ private fun getHeightWindowSize(windowDpSize: DpSize): WindowSize = windowDpSize
 
 fun Dp.toWidthWindowSize(): WindowSize = when {
     this < 0.dp -> throw IllegalArgumentException("Dp value cannot be negative")
+    this < 240.dp -> WindowSize.TINY
     this < 600.dp -> WindowSize.COMPACT
     this < 840.dp -> WindowSize.MEDIUM
     else -> WindowSize.EXPANDED
@@ -55,7 +56,7 @@ fun Dp.toWidthWindowSize(): WindowSize = when {
 
 fun Dp.toHeightWindowSize(): WindowSize = when {
     this < 0.dp -> throw IllegalArgumentException("Dp value cannot be negative")
-    this < 300.dp -> WindowSize.TINY
+    this < 240.dp -> WindowSize.TINY
     this < 480.dp -> WindowSize.COMPACT
     this < 900.dp -> WindowSize.MEDIUM
     else -> WindowSize.EXPANDED

@@ -124,7 +124,7 @@ private fun MainScreen(
     onCurrencySelectorClicked: (currencyCode: String) -> Unit,
 ) {
     Box {
-        if (windowState.isLandscape && windowState.widthWindowSize > WindowSize.TINY) {
+        if (windowState.isLandscape && windowState.widthWindowSize > WindowSize.COMPACT) {
             LandscapeMainLayout(
                 uiState,
                 windowState,

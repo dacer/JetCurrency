@@ -25,6 +25,10 @@ private val RobotoMonoFontFamily = FontFamily(
     Font(R.font.roboto_mono_light, FontWeight.Light)
 )
 
+val RobotoFontFamily = FontFamily(
+    Font(R.font.roboto_regular),
+)
+
 val CurrencyTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = MontserratFontFamily,
