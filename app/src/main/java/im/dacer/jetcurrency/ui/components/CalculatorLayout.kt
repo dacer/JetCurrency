@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,6 +57,7 @@ fun CalculatorLayout(
     modifier: Modifier = Modifier,
     onClickCalculatorButton: (Char) -> Unit,
     onClickBackspace: () -> Unit,
+    onLongClickBackspace: () -> Unit,
     onClickSettings: () -> Unit,
     onClickRefresh: () -> Unit,
     onClickFilterCurrency: () -> Unit,
@@ -91,7 +91,11 @@ fun CalculatorLayout(
             .padding(vertical = verticalPadding, horizontal = horizontalPadding)
             .align(Alignment.Center),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
             val btnModifier = Modifier.weight(1f)
             SettingsButton(
                 size = iconSize,
@@ -112,15 +116,22 @@ fun CalculatorLayout(
             BackspaceButton(
                 size = iconSize,
                 onClickBackspace = onClickBackspace,
+                onLongClickBackspace = onLongClickBackspace,
                 modifier = btnModifier
             )
         }
 
         calculatorRows.forEach { row ->
-            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
                 row.forEach { text ->
                     CalculatorButton(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
                         text = text,
                         fontSize = fontSize,
                     ) { onClickCalculatorButton.invoke(it) }
@@ -163,7 +174,7 @@ private fun RefreshButton(
     onClickRefresh: () -> Unit,
     modifier: Modifier
 ) {
-    IconButton(
+    CustomIconButton(
         onClick = onClickRefresh,
         modifier = modifier
     ) {
@@ -197,7 +208,7 @@ private fun SettingsButton(
     onClickSettings: () -> Unit,
     modifier: Modifier
 ) {
-    IconButton(
+    CustomIconButton(
         onClick = onClickSettings,
         modifier = modifier
     ) {
@@ -205,7 +216,9 @@ private fun SettingsButton(
             imageVector = Icons.Filled.Settings,
             contentDescription = "Settings",
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.fillMaxHeight().size(size)
+            modifier = Modifier
+                .fillMaxHeight()
+                .size(size)
         )
     }
 }
@@ -216,7 +229,7 @@ private fun FilterCurrencyButton(
     onClickFilterCurrency: () -> Unit,
     modifier: Modifier
 ) {
-    IconButton(
+    CustomIconButton(
         onClick = onClickFilterCurrency,
         modifier = modifier
     ) {
@@ -236,10 +249,12 @@ private fun FilterCurrencyButton(
 private fun BackspaceButton(
     size: Dp,
     onClickBackspace: (() -> Unit),
+    onLongClickBackspace: () -> Unit,
     modifier: Modifier
 ) {
-    IconButton(
+    CustomIconButton(
         onClick = onClickBackspace,
+        onLongClick = onLongClickBackspace,
         modifier = modifier
     ) {
         Image(
@@ -268,8 +283,10 @@ private fun PreviewCalculatorLayout() {
         isLoading = false,
         onClickCalculatorButton = {},
         onClickBackspace = {},
+        onLongClickBackspace = {},
         onClickSettings = {},
         onClickRefresh = {},
         onClickFilterCurrency = {},
     )
 }
+

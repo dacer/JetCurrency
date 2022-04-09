@@ -14,7 +14,11 @@ import im.dacer.jetcurrency.data.Result
 import im.dacer.jetcurrency.di.MainDispatcher
 import im.dacer.jetcurrency.model.Currency
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -93,6 +97,20 @@ class MainViewModel @Inject constructor(
                     currentUiState.dataMap,
                     currencyCode,
                     currentData.deleteLastStrInExpression(),
+                    currencyList.value,
+                )
+            )
+        }
+    }
+
+    fun onLongClickBackspace() {
+        viewModelState.update { currentUiState ->
+            val currencyCode = currentUiState.focusedCurrencyCode ?: return
+            currentUiState.copy(
+                dataMap = updateDataMap(
+                    currentUiState.dataMap,
+                    currencyCode,
+                    Currency.Data(),
                     currencyList.value,
                 )
             )
