@@ -60,7 +60,12 @@ class MainViewModel @Inject constructor(
         viewModelState.update {
             it.copy(
                 focusedCurrencyCode = currencyCode,
-                dataMap = it.dataMap.mapValues { Currency.Data() }.toMutableStateMap()
+                dataMap = it.dataMap.mapValues { (code, data) ->
+                    if (code == currencyCode) {
+                        return@mapValues data.generateExpressionIfNeed()
+                    }
+                    data
+                }.toMutableStateMap()
             )
         }
     }

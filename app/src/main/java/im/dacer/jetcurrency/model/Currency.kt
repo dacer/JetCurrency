@@ -59,6 +59,11 @@ data class Currency(
                 return numberFormat.format(value)
             }
 
+        fun generateExpressionIfNeed(): Data {
+            if (expression.isEmpty()) expression = displayValue
+            return this
+        }
+
         fun update(value: Double, expression: String = ""): Data {
             this.value = value
             this.expression = expression
