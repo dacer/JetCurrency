@@ -89,12 +89,12 @@ fun CurrencyList(
                     repeatMode = RepeatMode.Reverse
                 )
             )
-            if (addStatusBarPadding) Spacer(modifier = Modifier.statusBarsHeight())
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .then(modifier)
             ) {
+                if (addStatusBarPadding) Spacer(modifier = Modifier.statusBarsHeight())
                 FakeCurrencyItem(alpha)
                 FakeCurrencyItem(alpha)
             }
