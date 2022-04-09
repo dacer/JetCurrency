@@ -51,7 +51,7 @@ fun CurrencySelectorScreen(
     uiState: MainUiState,
     currencyList: List<Currency>,
     modifier: Modifier = Modifier,
-    isPortrait: Boolean = true,
+    isGridMode: Boolean = false,
     onBackClicked: () -> Unit,
     onSearchClicked: () -> Unit,
     onCurrencyClicked: (currencyCode: String) -> Unit,
@@ -90,14 +90,14 @@ fun CurrencySelectorScreen(
         content = { innerPadding ->
             when (uiState) {
                 is MainUiState.HasData -> {
-                    if (isPortrait) {
-                        CurrencySelector(
+                    if (isGridMode) {
+                        LandscapeCurrencySelector(
                             currencyList = currencyList,
                             innerPadding = innerPadding,
                             onCurrencyClicked = onCurrencyClicked,
                         )
                     } else {
-                        LandscapeCurrencySelector(
+                        CurrencySelector(
                             currencyList = currencyList,
                             innerPadding = innerPadding,
                             onCurrencyClicked = onCurrencyClicked,
@@ -253,7 +253,7 @@ private fun PreviewNoData(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
 @Preview("CurrencySelector")
 @Composable
 private fun PreviewCurrencySelector(
-    isPortrait: Boolean = true,
+    isGridMode: Boolean = false,
     heightWindowSize: WindowSize = WindowSize.MEDIUM
 ) {
     CurrencySelectorScreen(
@@ -270,7 +270,7 @@ private fun PreviewCurrencySelector(
             CurrencyFactory.HKD,
             CurrencyFactory.CNY,
         ),
-        isPortrait = isPortrait,
+        isGridMode = isGridMode,
         onBackClicked = {},
         onSearchClicked = {},
         onCurrencyClicked = {},
@@ -287,5 +287,5 @@ private fun PreviewCurrencySelector(
 )
 @Composable
 private fun PreviewLandscapeCurrencySelector() {
-    PreviewCurrencySelector(isPortrait = false)
+    PreviewCurrencySelector(isGridMode = true)
 }

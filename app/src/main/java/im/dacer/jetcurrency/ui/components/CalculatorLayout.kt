@@ -8,16 +8,20 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,17 +34,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import im.dacer.jetcurrency.R
+import im.dacer.jetcurrency.utils.WindowSize
+import im.dacer.jetcurrency.utils.toHeightWindowSize
+import im.dacer.jetcurrency.utils.toWidthWindowSize
 
-private val calculatorColumns = listOf(
-    listOf('7', '4', '1', '0'),
-    listOf('8', '5', '2', '.'),
-    listOf('9', '6', '3', '='),
-    listOf('÷', 'x', '-', '+'),
+private val calculatorRows = listOf(
+    listOf('7', '8', '9', '÷'),
+    listOf('4', '5', '6', 'x'),
+    listOf('1', '2', '3', '-'),
+    listOf('0', '.', '=', '+'),
 )
-
-private val buttonHeight = 55.dp
 
 @Composable
 fun CalculatorLayout(
@@ -51,60 +61,96 @@ fun CalculatorLayout(
     onClickSettings: () -> Unit,
     onClickRefresh: () -> Unit,
     onClickFilterCurrency: () -> Unit,
-) {
+) = BoxWithConstraints(modifier = modifier) {
+
+    val heightWindowSize = maxHeight.toHeightWindowSize()
+    val verticalPadding = when (heightWindowSize) {
+        WindowSize.TINY -> 8.dp
+        WindowSize.MEDIUM -> 120.dp
+        WindowSize.EXPANDED -> 120.dp
+        else -> 18.dp
+    }
+
+    val horizontalPadding = when (maxWidth.toWidthWindowSize()) {
+        WindowSize.EXPANDED -> 120.dp
+        else -> 0.dp
+    }
+
+    val fontSize = when (heightWindowSize) {
+        WindowSize.TINY -> 12.sp
+        else -> 22.sp
+    }
+
+    val iconSize = when (heightWindowSize) {
+        WindowSize.TINY -> 12.dp
+        else -> 22.dp
+    }
+
     Column(
-        modifier = modifier
-            .padding(top = 18.dp, bottom = 18.dp),
+        modifier = Modifier
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .align(Alignment.Center),
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            SettingsButton(onClickSettings = onClickSettings, modifier = Modifier.weight(1f))
+        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            val btnModifier = Modifier.weight(1f)
+            SettingsButton(
+                size = iconSize,
+                onClickSettings = onClickSettings,
+                modifier = btnModifier
+            )
             RefreshButton(
+                size = iconSize,
                 isLoading,
                 onClickRefresh = onClickRefresh,
-                modifier = Modifier.weight(1f)
+                modifier = btnModifier
             )
             FilterCurrencyButton(
+                size = iconSize,
                 onClickFilterCurrency = onClickFilterCurrency,
-                modifier = Modifier.weight(1f)
+                modifier = btnModifier
             )
             BackspaceButton(
+                size = iconSize,
                 onClickBackspace = onClickBackspace,
-                modifier = Modifier.weight(1f)
+                modifier = btnModifier
             )
         }
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            calculatorColumns.forEach { column ->
-                Column(modifier = Modifier.weight(1f)) {
-                    column.forEach { text ->
-                        CalculatorButton(text) { onClickCalculatorButton.invoke(it) }
-                    }
+        calculatorRows.forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                row.forEach { text ->
+                    CalculatorButton(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        text = text,
+                        fontSize = fontSize,
+                    ) { onClickCalculatorButton.invoke(it) }
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalculatorButton(
+    modifier: Modifier,
     text: Char,
+    fontSize: TextUnit = 22.sp,
     onClick: (Char) -> Unit
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         TextButton(
             onClick = { onClick.invoke(text) },
-            modifier = Modifier.fillMaxWidth()
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
             Text(
                 text = text.toString(),
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = fontSize),
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier
-                    .height(buttonHeight)
-                    .wrapContentHeight(),
             )
         }
     }
@@ -112,6 +158,7 @@ private fun CalculatorButton(
 
 @Composable
 private fun RefreshButton(
+    size: Dp,
     isLoading: Boolean,
     onClickRefresh: () -> Unit,
     modifier: Modifier
@@ -130,7 +177,7 @@ private fun RefreshButton(
             )
         )
         var iconModifier = Modifier
-            .height(buttonHeight)
+            .fillMaxHeight()
         if (isLoading) {
             iconModifier = iconModifier.then(Modifier.rotate(rotateDegrees))
         }
@@ -139,13 +186,14 @@ private fun RefreshButton(
             imageVector = Icons.Filled.Refresh,
             contentDescription = "Refresh",
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = iconModifier
+            modifier = iconModifier.size(size)
         )
     }
 }
 
 @Composable
 private fun SettingsButton(
+    size: Dp,
     onClickSettings: () -> Unit,
     modifier: Modifier
 ) {
@@ -157,13 +205,14 @@ private fun SettingsButton(
             imageVector = Icons.Filled.Settings,
             contentDescription = "Settings",
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.height(buttonHeight)
+            modifier = Modifier.fillMaxHeight().size(size)
         )
     }
 }
 
 @Composable
 private fun FilterCurrencyButton(
+    size: Dp,
     onClickFilterCurrency: () -> Unit,
     modifier: Modifier
 ) {
@@ -176,14 +225,16 @@ private fun FilterCurrencyButton(
             contentDescription = "Filter",
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
             modifier = Modifier
-                .height(buttonHeight)
+                .fillMaxHeight()
                 .wrapContentWidth()
+                .size(size)
         )
     }
 }
 
 @Composable
 private fun BackspaceButton(
+    size: Dp,
     onClickBackspace: (() -> Unit),
     modifier: Modifier
 ) {
@@ -196,8 +247,29 @@ private fun BackspaceButton(
             contentDescription = "Backspace",
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
             modifier = Modifier
-                .height(buttonHeight)
+                .fillMaxHeight()
                 .wrapContentWidth()
+                .size(size)
         )
     }
+}
+
+@Preview(
+    "Small main screen (Landscape)",
+    device = Devices.AUTOMOTIVE_1024p,
+    widthDp = 360,
+    heightDp = 140,
+    showBackground = true
+)
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCalculatorLayout() {
+    CalculatorLayout(
+        isLoading = false,
+        onClickCalculatorButton = {},
+        onClickBackspace = {},
+        onClickSettings = {},
+        onClickRefresh = {},
+        onClickFilterCurrency = {},
+    )
 }

@@ -24,10 +24,10 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            val (widthWindowSize, heightWindowSize) = rememberWindowSize()
+            val windowStatus = rememberWindowSize()
             CurrencyTheme {
                 ProvideWindowInsets {
-                    MainScreen(viewModel, heightWindowSize)
+                    MainScreen(viewModel, windowStatus)
                 }
             }
         }

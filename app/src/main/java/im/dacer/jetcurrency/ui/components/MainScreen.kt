@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -43,13 +44,14 @@ import im.dacer.jetcurrency.ui.components.factory.CurrencyFactory
 import im.dacer.jetcurrency.ui.main.MainUiState
 import im.dacer.jetcurrency.ui.main.MainViewModel
 import im.dacer.jetcurrency.utils.WindowSize
+import im.dacer.jetcurrency.utils.WindowState
 
 @ExperimentalFoundationApi
 @ExperimentalMaterial3Api
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
-    heightWindowSize: WindowSize,
+    windowState: WindowState,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val shownCurrencyList by viewModel.shownCurrencyList.collectAsState()
@@ -79,7 +81,7 @@ fun MainScreen(
     MainScreen(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
-        heightWindowSize = heightWindowSize,
+        windowState = windowState,
         shownCurrencyList = shownCurrencyList,
         currencyList = currencyList,
         showNotImplementedAlert = showNotImplementedAlert,
@@ -104,7 +106,7 @@ fun MainScreen(
 private fun MainScreen(
     uiState: MainUiState,
     snackbarHostState: SnackbarHostState,
-    heightWindowSize: WindowSize,
+    windowState: WindowState,
     shownCurrencyList: List<Currency>,
     currencyList: List<Currency>,
     showNotImplementedAlert: Boolean,
@@ -122,9 +124,10 @@ private fun MainScreen(
     onCurrencySelectorClicked: (currencyCode: String) -> Unit,
 ) {
     Box {
-        if (heightWindowSize == WindowSize.COMPACT) {
+        if (windowState.isLandscape && windowState.widthWindowSize > WindowSize.TINY) {
             LandscapeMainLayout(
                 uiState,
+                windowState,
                 shownCurrencyList,
                 overlappingLength,
                 onFocusCurrencyItem,
@@ -162,7 +165,7 @@ private fun MainScreen(
                 uiState = uiState,
                 currencyList = currencyList,
                 modifier = Modifier.fillMaxHeight(),
-                isPortrait = heightWindowSize != WindowSize.COMPACT,
+                isGridMode = windowState.widthWindowSize > WindowSize.COMPACT,
                 onBackClicked = onCurrencySelectorBack,
                 onSearchClicked = onCurrencySelectorSearch,
                 onCurrencyClicked = onCurrencySelectorClicked,
@@ -188,7 +191,7 @@ private fun PortraitMainLayout(
     onClickFilterCurrency: () -> Unit
 ) {
     Column(
-        Modifier
+        modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(-overlappingLength)
@@ -206,11 +209,13 @@ private fun PortraitMainLayout(
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 topEnd = 16.dp,
-            )
+            ),
+            modifier = Modifier.weight(1f),
         ) {
             CalculatorLayout(
-                uiState.isLoading,
+                isLoading = uiState.isLoading,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .navigationBarsPadding(start = false),
                 onClickCalculatorButton = onClickCalculatorButton,
@@ -226,6 +231,7 @@ private fun PortraitMainLayout(
 @Composable
 private fun LandscapeMainLayout(
     uiState: MainUiState,
+    windowState: WindowState,
     shownCurrencyList: List<Currency>,
     overlappingLength: Dp,
     onFocusCurrencyItem: (currencyCode: String) -> Unit,
@@ -255,11 +261,14 @@ private fun LandscapeMainLayout(
                 topStart = 16.dp,
                 bottomStart = 16.dp,
             ),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(
+                if (windowState.widthWindowSize == WindowSize.EXPANDED) 0.7f else 1f
+            ),
         ) {
             CalculatorLayout(
-                uiState.isLoading,
+                isLoading = uiState.isLoading,
                 modifier = Modifier
+                    .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .statusBarsPadding()
                     .navigationBarsPadding(start = false),
@@ -282,8 +291,8 @@ private fun LandscapeMainLayout(
     heightDp = 360
 )
 @Composable
-private fun PreviewLandscapeRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
-    PreviewRoot(heightWindowSize = WindowSize.COMPACT)
+private fun PreviewLandscapeRoot() {
+    PreviewRoot(isLandscape = true)
 }
 
 @ExperimentalFoundationApi
@@ -297,7 +306,11 @@ private fun PreviewLandscapeRoot(heightWindowSize: WindowSize = WindowSize.MEDIU
 @Preview("Home screen (Tablet)", device = Devices.PIXEL_C)
 @Preview("Main screen (big font)", fontScale = 1.5f, device = Devices.NEXUS_7_2013)
 @Composable
-private fun PreviewRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
+private fun PreviewRoot(
+    widthWindowSize: WindowSize = WindowSize.MEDIUM,
+    heightWindowSize: WindowSize = WindowSize.MEDIUM,
+    isLandscape: Boolean = false,
+) {
     MainScreen(
         uiState = MainUiState.HasData(
             isLoading = false,
@@ -305,7 +318,7 @@ private fun PreviewRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
             dataMap = CurrencyFactory.DataMap,
             focusedCurrencyCode = "USD",
         ),
-        heightWindowSize = heightWindowSize,
+        windowState = WindowState(widthWindowSize, heightWindowSize, isLandscape),
         shownCurrencyList = listOf(
             CurrencyFactory.USD,
             CurrencyFactory.JPY,
@@ -326,4 +339,3 @@ private fun PreviewRoot(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
         onCurrencySelectorClicked = {},
     )
 }
-
