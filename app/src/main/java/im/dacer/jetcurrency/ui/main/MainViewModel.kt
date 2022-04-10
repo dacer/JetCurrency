@@ -115,7 +115,7 @@ class MainViewModel @Inject constructor(
                 dataMap = updateDataMap(
                     currentUiState.dataMap,
                     currencyCode,
-                    Currency.Data(),
+                    Currency.Data.empty(),
                     currencyList.value,
                 )
             )
@@ -160,7 +160,7 @@ class MainViewModel @Inject constructor(
                                 dataMap = updateDataMap(
                                     emptyMap<String, Currency.Data>().toMutableStateMap(),
                                     DEFAULT_CURRENCY_1,
-                                    Currency.Data(),
+                                    Currency.Data.empty(),
                                     currencyList.value,
                                 )
                             )

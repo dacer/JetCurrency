@@ -37,8 +37,8 @@ class CurrencyFactory {
         )
 
         val DataMap: Map<String, Currency.Data> = mapOf(
-            "JPY" to Currency.Data(230.45008),
-            "USD" to Currency.Data(2.0)
+            "JPY" to Currency.Data.Build(230.45008),
+            "USD" to Currency.Data.Build(2.0)
         )
     }
 }

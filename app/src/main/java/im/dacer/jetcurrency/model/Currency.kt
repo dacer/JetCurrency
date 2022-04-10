@@ -1,12 +1,12 @@
 package im.dacer.jetcurrency.model
 
+import androidx.annotation.VisibleForTesting
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import im.dacer.jetcurrency.utils.Calculator
-import java.text.NumberFormat
-import java.util.Locale
+import java.text.DecimalFormat
 
 @Entity
 data class Currency(
@@ -41,10 +41,25 @@ data class Currency(
     /**
      * Used for storing data for displaying. Will not be saved in the database.
      */
-    class Data(var value: Double = 0.0) {
-        private val numberFormat: NumberFormat by lazy {
-            // TODO show better format
-            NumberFormat.getNumberInstance(Locale.getDefault())
+    class Data private constructor(
+        var value: Double = 0.0,
+        private val currency: Currency? = null,
+    ) {
+        private val numberFormat: DecimalFormat by lazy {
+            return@lazy when {
+                currency == null -> {
+                    DecimalFormat("#.###")
+                }
+                currency.exchangeRateFromUsd < 0.001 -> {
+                    DecimalFormat("#.######")
+                }
+                currency.exchangeRateFromUsd > 10000 -> {
+                    DecimalFormat("#")
+                }
+                else -> {
+                    DecimalFormat("#.###")
+                }
+            }
         }
 
         /**
@@ -108,7 +123,20 @@ data class Currency(
 
         companion object {
             fun Build(currency: Currency, fromCurrency: Currency, fromCurrencyValue: Double): Data {
-                return Data().convertValue(currency, fromCurrency, fromCurrencyValue)
+                return Data(currency = currency).convertValue(
+                    currency,
+                    fromCurrency,
+                    fromCurrencyValue
+                )
+            }
+
+            fun empty(): Data {
+                return Data()
+            }
+
+            @VisibleForTesting
+            fun Build(value: Double): Data {
+                return Data(value)
             }
         }
     }
