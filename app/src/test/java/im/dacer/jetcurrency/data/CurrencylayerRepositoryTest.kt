@@ -5,9 +5,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
 import im.dacer.jetcurrency.MainCoroutineRule
-import im.dacer.jetcurrency.api.CurrencylayerService
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerService
 import im.dacer.jetcurrency.data.CurrencylayerRepository.Companion.REFRESH_DURATION_IN_MILLIS
-import im.dacer.jetcurrency.factory.CurrencylayerRepositoryFactory
+import im.dacer.jetcurrency.factory.CurrencyRepositoryFactory
 import im.dacer.jetcurrency.factory.FakeCurrencyDao
 import im.dacer.jetcurrency.utils.NetworkUtils
 import kotlinx.coroutines.Dispatchers
@@ -56,10 +56,10 @@ class CurrencylayerRepositoryTest {
         )
         mainCoroutineRule.runBlockingTest {
             whenever(mockCurrencylayerService.live()).thenReturn(
-                CurrencylayerRepositoryFactory.mockCurrencylayerLiveResponse()
+                CurrencyRepositoryFactory.Currencylayer.mockLiveResponse()
             )
             whenever(mockCurrencylayerService.list()).thenReturn(
-                CurrencylayerRepositoryFactory.mockCurrencylayerListResponse()
+                CurrencyRepositoryFactory.Currencylayer.mockListResponse()
             )
         }
     }
@@ -77,7 +77,7 @@ class CurrencylayerRepositoryTest {
 
         verify(mockCurrencylayerService, times(1)).live()
         Truth.assertThat(currencylayerRepository.getLatestData()).containsExactlyElementsIn(
-            CurrencylayerRepositoryFactory.mockSyncResult
+            CurrencyRepositoryFactory.mockSyncResult
         )
         Truth.assertThat(preferenceHelper.currencyUpdatedAt).isGreaterThan(lastUpdateAt)
     }
@@ -85,14 +85,14 @@ class CurrencylayerRepositoryTest {
     @Test
     fun doNotCallRemoteApi_whenGetDataAgainIn30Minutes() = mainCoroutineRule.runBlockingTest {
         currencyDao.insertCurrencies(
-            *CurrencylayerRepositoryFactory.mockSyncResult.toTypedArray()
+            *CurrencyRepositoryFactory.mockSyncResult.toTypedArray()
         )
         val lastUpdateAt = System.currentTimeMillis() - (REFRESH_DURATION_IN_MILLIS - 10)
         preferenceHelper.currencyUpdatedAt = lastUpdateAt
 
         verify(mockCurrencylayerService, never()).live()
         Truth.assertThat(currencylayerRepository.getLatestData()).containsExactlyElementsIn(
-            CurrencylayerRepositoryFactory.mockSyncResult
+            CurrencyRepositoryFactory.mockSyncResult
         )
         Truth.assertThat(preferenceHelper.currencyUpdatedAt).isEqualTo(lastUpdateAt)
     }
@@ -101,25 +101,25 @@ class CurrencylayerRepositoryTest {
     fun doNotCallRemoteApi_whenOffline() = mainCoroutineRule.runBlockingTest {
         whenever(mockNetworkUtils.isNetworkConnected()).thenReturn(false)
         currencyDao.insertCurrencies(
-            *CurrencylayerRepositoryFactory.mockSyncResult.toTypedArray()
+            *CurrencyRepositoryFactory.mockSyncResult.toTypedArray()
         )
 
         verify(mockCurrencylayerService, never()).live()
         Truth.assertThat(currencylayerRepository.getLatestData()).containsExactlyElementsIn(
-            CurrencylayerRepositoryFactory.mockSyncResult
+            CurrencyRepositoryFactory.mockSyncResult
         )
     }
 
     @Test
     fun reFetchCurrencyNameList_whenRemoteCurrencyNameListChanged() = mainCoroutineRule.runBlockingTest {
         currencyDao.insertCurrencies(
-            *CurrencylayerRepositoryFactory.mockSyncResult.toTypedArray()
+            *CurrencyRepositoryFactory.mockSyncResult.toTypedArray()
         )
         whenever(mockCurrencylayerService.live()).thenReturn(
-            CurrencylayerRepositoryFactory.mockChangedCurrencylayerLiveResponse()
+            CurrencyRepositoryFactory.Currencylayer.mockChangedLiveResponse()
         )
         whenever(mockCurrencylayerService.list()).thenReturn(
-            CurrencylayerRepositoryFactory.mockChangedCurrencylayerListResponse()
+            CurrencyRepositoryFactory.Currencylayer.mockChangedListResponse()
         )
         val lastUpdateAt = System.currentTimeMillis() - (REFRESH_DURATION_IN_MILLIS + 10)
         preferenceHelper.currencyUpdatedAt = lastUpdateAt
@@ -127,7 +127,7 @@ class CurrencylayerRepositoryTest {
 
         verify(mockCurrencylayerService, times(1)).live()
         Truth.assertThat(currencylayerRepository.getLatestData()).containsExactlyElementsIn(
-            CurrencylayerRepositoryFactory.mockSyncResultAfterChanged
+            CurrencyRepositoryFactory.mockSyncResultAfterChanged
         )
         Truth.assertThat(preferenceHelper.currencyUpdatedAt).isGreaterThan(lastUpdateAt)
     }

@@ -1,6 +1,9 @@
 package im.dacer.jetcurrency.api
 
 import com.google.gson.Gson
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerListResponse
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerLiveResponse
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerService
 import retrofit2.Response
 
 class FakeCurrencylayerService : CurrencylayerService {

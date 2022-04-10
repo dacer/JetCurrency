@@ -1,6 +1,7 @@
-package im.dacer.jetcurrency.api
+package im.dacer.jetcurrency.api.currencylayer
 
 import com.google.gson.annotations.SerializedName
+import im.dacer.jetcurrency.api.LiveResponse
 import im.dacer.jetcurrency.model.CurrencyWithoutFullName
 
 /**
@@ -27,14 +28,14 @@ data class CurrencylayerLiveResponse(
     @field:SerializedName("success") val success: Boolean,
     @field:SerializedName("timestamp") val timestamp: Int,
     @field:SerializedName("source") val source: String,
-    @field:SerializedName("quotes") val quotes: HashMap<String, Double>,
+    @field:SerializedName("quotes") val quotes: Map<String, Double>,
     @field:SerializedName("error") val error: CurrencylayerError?,
-) {
+) : LiveResponse {
 
     /**
      * Return currency list based on source and quotes.
      */
-    fun getCurrencyList(): List<CurrencyWithoutFullName> {
+    override fun getCurrencyList(): List<CurrencyWithoutFullName> {
         return quotes.map {
             CurrencyWithoutFullName(it.key.substring(source.length), it.value)
         }

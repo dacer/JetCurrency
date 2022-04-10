@@ -4,8 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
-import im.dacer.jetcurrency.api.CurrencylayerService
 import im.dacer.jetcurrency.api.FakeCurrencylayerService
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerService
 import javax.inject.Singleton
 
 @TestInstallIn(

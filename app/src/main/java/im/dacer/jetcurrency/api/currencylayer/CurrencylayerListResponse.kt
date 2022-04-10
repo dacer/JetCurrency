@@ -1,4 +1,4 @@
-package im.dacer.jetcurrency.api
+package im.dacer.jetcurrency.api.currencylayer
 
 import com.google.gson.annotations.SerializedName
 

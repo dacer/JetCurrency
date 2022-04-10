@@ -1,4 +1,4 @@
-package im.dacer.jetcurrency.api
+package im.dacer.jetcurrency.api.currencylayer
 
 import im.dacer.jetcurrency.BuildConfig
 import retrofit2.Response

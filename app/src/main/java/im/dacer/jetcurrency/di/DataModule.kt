@@ -5,7 +5,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import im.dacer.jetcurrency.data.CurrencyRepository
-import im.dacer.jetcurrency.data.CurrencylayerRepository
+import im.dacer.jetcurrency.data.FreeCurrencyRepository
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -15,6 +15,6 @@ abstract class DataModule {
     @Singleton
     @Binds
     abstract fun provideCurrencyRepository(
-        repository: CurrencylayerRepository
+        repository: FreeCurrencyRepository
     ): CurrencyRepository
 }
