@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -31,8 +32,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.systemBarsPadding
 import im.dacer.jetcurrency.model.Currency
@@ -50,6 +54,7 @@ import im.dacer.jetcurrency.ui.components.factory.CurrencyFactory
 import im.dacer.jetcurrency.ui.main.MainUiState
 import im.dacer.jetcurrency.ui.theme.drawableResource
 import im.dacer.jetcurrency.utils.WindowSize
+import im.dacer.jetcurrency.utils.toWidthWindowSize
 
 @ExperimentalFoundationApi
 @ExperimentalMaterial3Api
@@ -62,36 +67,21 @@ fun CurrencySelectorScreen(
     onBackClicked: () -> Unit,
     onSearchClicked: () -> Unit,
     onCurrencyClicked: (currencyCode: String) -> Unit,
-) {
+) = BoxWithConstraints(modifier = modifier) {
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val scrollBehavior = remember(decayAnimationSpec) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
     }
+    val widthWindowSize = maxWidth.toWidthWindowSize()
+
     Scaffold(
-        modifier = modifier
+        modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .systemBarsPadding(top = false, bottom = false),
         topBar = {
-            LargeTopAppBar(
-                title = { Text("Choose currencies") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClicked) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onSearchClicked) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-                modifier = Modifier.statusBarsPadding()
+            CustomTopBar(
+                isTiny = widthWindowSize == WindowSize.TINY,
+                onBackClicked, onSearchClicked, scrollBehavior
             )
         },
         content = { innerPadding ->
@@ -107,6 +97,7 @@ fun CurrencySelectorScreen(
                         CurrencySelector(
                             currencyList = currencyList,
                             innerPadding = innerPadding,
+                            widthWindowSize = widthWindowSize,
                             onCurrencyClicked = onCurrencyClicked,
                         )
                     }
@@ -125,11 +116,66 @@ fun CurrencySelectorScreen(
     )
 }
 
+@Composable
+private fun CustomTopBar(
+    isTiny: Boolean,
+    onBackClicked: () -> Unit,
+    onSearchClicked: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior
+) {
+    if (isTiny) {
+        SmallTopAppBar(
+            title = { Text("Choose") },
+            navigationIcon = {
+                IconButton(onClick = onBackClicked) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = onSearchClicked) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                }
+            },
+            scrollBehavior = scrollBehavior,
+            modifier = Modifier.statusBarsPadding()
+        )
+    } else {
+        LargeTopAppBar(
+            title = { Text("Choose currencies") },
+            navigationIcon = {
+                IconButton(onClick = onBackClicked) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = onSearchClicked) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                }
+            },
+            scrollBehavior = scrollBehavior,
+            modifier = Modifier.statusBarsPadding()
+        )
+    }
+}
+
 @ExperimentalFoundationApi
 @Composable
 private fun CurrencySelector(
     currencyList: List<Currency>,
     innerPadding: PaddingValues,
+    widthWindowSize: WindowSize,
     onCurrencyClicked: (currencyCode: String) -> Unit,
 ) {
     LazyColumn(
@@ -142,6 +188,7 @@ private fun CurrencySelector(
         ) { currency ->
             CurrencyRow(
                 currency = currency,
+                widthWindowSize = widthWindowSize,
                 modifier = Modifier.animateItemPlacement(),
             ) { onCurrencyClicked.invoke(currency.code) }
         }
@@ -175,12 +222,20 @@ private fun LandscapeCurrencySelector(
 }
 
 @Composable
-private fun CurrencyRow(currency: Currency, modifier: Modifier = Modifier, onClicked: () -> Unit) {
+private fun CurrencyRow(
+    modifier: Modifier = Modifier,
+    currency: Currency,
+    widthWindowSize: WindowSize = WindowSize.EXPANDED,
+    onClicked: () -> Unit
+) {
     val selected = currency.isShowing
 
-    //TODO
-    val widthWindowSize = WindowSize.EXPANDED
-
+    val mainFontSize = when (widthWindowSize) {
+        WindowSize.TINY -> 14.sp
+        WindowSize.COMPACT -> 22.sp
+        WindowSize.MEDIUM -> 28.sp
+        WindowSize.EXPANDED -> 32.sp
+    }
     val imageSize = when (widthWindowSize) {
         WindowSize.TINY -> 0.dp
         WindowSize.COMPACT -> 22.dp
@@ -209,7 +264,7 @@ private fun CurrencyRow(currency: Currency, modifier: Modifier = Modifier, onCli
             Column {
                 Text(
                     text = currency.code,
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = mainFontSize),
                     color = fontColor,
                     maxLines = 1,
                 )
@@ -236,7 +291,7 @@ private fun CurrencyRow(currency: Currency, modifier: Modifier = Modifier, onCli
 @Composable
 private fun PreviewCurrencyRow() {
     CurrencyRow(
-        Currency(
+        currency = Currency(
             code = "JPY",
             fullName = "Japanese Yen",
             exchangeRateFromUsd = 115.22504,
@@ -249,7 +304,7 @@ private fun PreviewCurrencyRow() {
 @Composable
 private fun PreviewSelectedCurrencyRow() {
     CurrencyRow(
-        Currency(
+        currency = Currency(
             code = "JPY",
             fullName = "Japanese Yen",
             exchangeRateFromUsd = 115.22504,
