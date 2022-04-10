@@ -37,6 +37,11 @@ directory (usually `~/.gradle/gradle.properties` on Linux and Mac) or in the pro
 currencylayer_access_key=<your Currencylayer access key>
 ```
 
+## Credits
+
+* [currency-flags](https://github.com/transferwise/currency-flags)
+* [Free Currency Rates API](https://github.com/fawazahmed0/currency-api)
+
 ## License
 
 Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
