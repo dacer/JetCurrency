@@ -48,9 +48,27 @@
         <entry key="../../../../layout/compose-model-1649484985337.xml" value="0.1" />
         <entry key="../../../../layout/compose-model-1649488885198.xml" value="1.5" />
         <entry key="../../../../layout/compose-model-1649488885199.xml" value="0.2972222222222222" />
+        <entry key="../../../../layout/compose-model-1649582080270.xml" value="0.5151228733459358" />
+        <entry key="../../../../layout/compose-model-1649600216300.xml" value="0.5259259259259259" />
+        <entry key="../../../../layout/compose-model-1649601022036.xml" value="0.1402044293015332" />
+        <entry key="../../../../layout/compose-model-1649601025446.xml" value="0.1402044293015332" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_aed.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_ars.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_aud.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_bdt.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_bgn.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_bnd.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_brl.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_bwp.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_cad.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_chf.xml" value="0.284" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_empty.xml" value="0.1165" />
+        <entry key="app/src/main/res/drawable-anydpi/flag_jpy.xml" value="0.1165" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.4197916666666667" />
+        <entry key="app/src/main/res/drawable/flag_uah.xml" value="0.284" />
         <entry key="app/src/main/res/drawable/ic_baseline_backspace_24.xml" value="0.4197916666666667" />
         <entry key="app/src/main/res/drawable/ic_baseline_filter_list_24.xml" value="0.4197916666666667" />
+        <entry key="app/src/main/res/drawable/ic_flag_aed.xml" value="0.2635" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.4197916666666667" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.4197916666666667" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.4197916666666667" />

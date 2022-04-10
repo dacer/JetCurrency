@@ -47,7 +47,7 @@ val CurrencyTypography = Typography(
     // TODO: need some time to choose font!!!
     displaySmall = TextStyle(
         fontFamily = RobotoMonoFontFamily,
-        fontWeight = FontWeight.Light,
+        fontWeight = FontWeight.Normal,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp

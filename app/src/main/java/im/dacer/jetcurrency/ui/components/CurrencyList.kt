@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +19,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +31,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -38,6 +44,7 @@ import com.google.accompanist.insets.statusBarsHeight
 import im.dacer.jetcurrency.model.Currency
 import im.dacer.jetcurrency.ui.main.MainUiState
 import im.dacer.jetcurrency.ui.theme.RobotoFontFamily
+import im.dacer.jetcurrency.ui.theme.drawableResource
 import im.dacer.jetcurrency.utils.WindowSize
 import im.dacer.jetcurrency.utils.toWidthWindowSize
 
@@ -62,8 +69,7 @@ fun CurrencyList(
                 }
                 items(shownCurrencyList) { c ->
                     CurrencyItem(
-                        code = c.code,
-                        fullName = c.fullName,
+                        currency = c,
                         amount = mainUiState.dataMap[c.code]?.displayValue ?: "0",
                         isFocused = mainUiState.focusedCurrencyCode == c.code,
                         widthWindowSize = maxWidth.toWidthWindowSize(),
@@ -120,8 +126,7 @@ private fun FakeCurrencyItem(alpha: Float = 0.5f) {
 
 @Composable
 private fun CurrencyItem(
-    code: String,
-    fullName: String,
+    currency: Currency,
     amount: String = "",
     isFocused: Boolean = false,
     widthWindowSize: WindowSize = WindowSize.EXPANDED,
@@ -135,32 +140,58 @@ private fun CurrencyItem(
         WindowSize.EXPANDED -> 36.sp
     }
 
+    val subFontSize = when (widthWindowSize) {
+        WindowSize.TINY -> 12.sp
+        WindowSize.COMPACT -> 12.sp
+        WindowSize.MEDIUM -> 14.sp
+        WindowSize.EXPANDED -> 16.sp
+    }
+
+    val imageSize = when (widthWindowSize) {
+        WindowSize.TINY -> 0.dp
+        WindowSize.COMPACT -> 22.dp
+        WindowSize.MEDIUM -> 24.dp
+        WindowSize.EXPANDED -> 26.dp
+    }
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClickCurrencyItem.invoke(code) }
+            .clickable { onClickCurrencyItem.invoke(currency.code) }
             .background(if (isFocused) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
             .padding(start = 22.dp, end = 22.dp + extraEndPadding, top = 16.dp, bottom = 16.dp)
             .navigationBarsPadding(bottom = false, end = false)
     ) {
         val fontColor =
             if (isFocused) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground
-        Column {
-            Text(
-                text = code,
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = mainFontSize),
-                color = fontColor,
-                modifier = Modifier.padding(end = 6.dp)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
             if (widthWindowSize != WindowSize.TINY) {
-                AnimatedVisibility(visible = isFocused) {
-                    Text(
-                        text = fullName,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = fontColor,
-                        maxLines = 1,
-                    )
+                Image(
+                    painter = painterResource(id = drawableResource(name = currency.flagDrawableName)),
+                    contentDescription = "flag",
+                    modifier = Modifier
+                        .size(imageSize)
+                        .clip(RoundedCornerShape(6.dp))
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+            }
+            Column {
+                Text(
+                    text = currency.code,
+                    style = MaterialTheme.typography.displaySmall.copy(fontSize = mainFontSize),
+                    color = fontColor,
+                    modifier = Modifier.padding(end = 6.dp)
+                )
+                if (widthWindowSize != WindowSize.TINY) {
+                    AnimatedVisibility(visible = isFocused) {
+                        Text(
+                            text = currency.fullName,
+                            style = MaterialTheme.typography.labelMedium.copy(fontSize = subFontSize),
+                            color = fontColor,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
         }
@@ -180,8 +211,11 @@ private fun CurrencyItem(
 @Composable
 private fun PreviewCurrencyItem() {
     CurrencyItem(
-        code = "JPY",
-        fullName = "Japanese Yen",
+        currency = Currency(
+            code = "JPY",
+            fullName = "Japanese Yen",
+            exchangeRateFromUsd = 0.0
+        ),
         amount = "0",
     )
 }
@@ -190,8 +224,11 @@ private fun PreviewCurrencyItem() {
 @Composable
 private fun PreviewFocusedCurrencyItem() {
     CurrencyItem(
-        code = "JPY",
-        fullName = "Japanese Yen",
+        currency = Currency(
+            code = "JPY",
+            fullName = "Japanese Yen",
+            exchangeRateFromUsd = 0.0
+        ),
         amount = "1024323",
         isFocused = true,
     )
@@ -206,8 +243,11 @@ private fun PreviewFocusedCurrencyItem() {
 @Composable
 private fun PreviewFocusedSmallCurrencyItem() {
     CurrencyItem(
-        code = "JPY",
-        fullName = "Japanese Yen",
+        currency = Currency(
+            code = "JPY",
+            fullName = "Japanese Yen",
+            exchangeRateFromUsd = 0.0
+        ),
         amount = "1024323",
         widthWindowSize = WindowSize.TINY,
         isFocused = true,

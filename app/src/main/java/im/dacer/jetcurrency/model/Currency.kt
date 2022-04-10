@@ -2,6 +2,7 @@ package im.dacer.jetcurrency.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import im.dacer.jetcurrency.utils.Calculator
 import java.text.NumberFormat
@@ -15,6 +16,9 @@ data class Currency(
     @ColumnInfo(name = "exchange_rate_from_usd") val exchangeRateFromUsd: Double,
     var order: Int? = null,
 ) {
+
+    @Ignore
+    val flagDrawableName = "flag_${code.lowercase()}"
 
     val isShowing: Boolean
         get() {
