@@ -48,16 +48,16 @@ data class Currency(
         private val numberFormat: DecimalFormat by lazy {
             return@lazy when {
                 currency == null -> {
-                    DecimalFormat("#.###")
+                    DecimalFormat("#,###.###")
                 }
                 currency.exchangeRateFromUsd < 0.001 -> {
-                    DecimalFormat("#.######")
+                    DecimalFormat("#,###.######")
                 }
                 currency.exchangeRateFromUsd > 10000 -> {
-                    DecimalFormat("#")
+                    DecimalFormat("#,###")
                 }
                 else -> {
-                    DecimalFormat("#.###")
+                    DecimalFormat("#,###.###")
                 }
             }
         }
