@@ -40,6 +40,7 @@ currencylayer_access_key=<your Currencylayer access key>
 ## Credits
 
 * [currency-flags](https://github.com/transferwise/currency-flags)
+* [Cryptocurrency Icons](https://github.com/spothq/cryptocurrency-icons)  
 * [Free Currency Rates API](https://github.com/fawazahmed0/currency-api)
 
 ## License
