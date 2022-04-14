@@ -68,24 +68,29 @@ fun CalculatorLayout(
     val heightWindowSize = maxHeight.toHeightWindowSize()
     val verticalPadding = when (heightWindowSize) {
         WindowSize.TINY -> 8.dp
+        WindowSize.COMPACT -> 18.dp
         WindowSize.MEDIUM -> 120.dp
         WindowSize.EXPANDED -> 120.dp
-        else -> 18.dp
     }
 
     val horizontalPadding = when (maxWidth.toWidthWindowSize()) {
+        WindowSize.MEDIUM -> 40.dp
         WindowSize.EXPANDED -> 120.dp
         else -> 0.dp
     }
 
     val fontSize = when (heightWindowSize) {
         WindowSize.TINY -> 12.sp
-        else -> 22.sp
+        WindowSize.COMPACT -> 22.sp
+        WindowSize.MEDIUM -> 26.sp
+        WindowSize.EXPANDED -> 32.sp
     }
 
     val iconSize = when (heightWindowSize) {
         WindowSize.TINY -> 12.dp
-        else -> 22.dp
+        WindowSize.COMPACT -> 22.dp
+        WindowSize.MEDIUM -> 26.dp
+        WindowSize.EXPANDED -> 32.dp
     }
 
     Column(
