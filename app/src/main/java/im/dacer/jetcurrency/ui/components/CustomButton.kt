@@ -108,7 +108,8 @@ fun CustomIconButton(
         color = Color.Transparent
     ) {
         Box(
-            contentAlignment = Alignment.Center, modifier = Modifier
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
                 .combinedClickable(
                     interactionSource = interactionSource,
                     enabled = enabled,

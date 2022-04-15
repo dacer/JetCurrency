@@ -300,4 +300,3 @@ private fun PreviewCalculatorLayout() {
         onClickFilterCurrency = {},
     )
 }
-
