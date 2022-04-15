@@ -1,6 +1,7 @@
 package im.dacer.jetcurrency.api.currencylayer
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 /**
  * A full list of supported currencies from currencylayer.
@@ -22,8 +23,9 @@ import com.google.gson.annotations.SerializedName
  * https://currencylayer.com/documentation#supported_currencies
  */
 // TODO make a BaseResponse that include success and error
+@JsonClass(generateAdapter = true)
 data class CurrencylayerListResponse(
-    @field:SerializedName("success") val success: Boolean,
-    @field:SerializedName("currencies") val currencies: HashMap<String, String>,
-    @field:SerializedName("error") val error: CurrencylayerError?,
+    @Json(name = "success") val success: Boolean,
+    @Json(name = "currencies") val currencies: HashMap<String, String>,
+    @Json(name = "error") val error: CurrencylayerError?,
 )

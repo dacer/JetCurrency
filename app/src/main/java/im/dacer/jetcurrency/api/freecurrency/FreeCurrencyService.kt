@@ -2,7 +2,7 @@ package im.dacer.jetcurrency.api.freecurrency
 
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
 /**
@@ -22,7 +22,7 @@ interface FreeCurrencyService {
         fun create(): FreeCurrencyService {
             return Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create())
                 .build()
                 .create(FreeCurrencyService::class.java)
         }

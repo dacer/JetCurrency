@@ -18,4 +18,4 @@ package im.dacer.jetcurrency.api.freecurrency
  * Documentation:
  * https://github.com/fawazahmed0/currency-api
  */
-typealias FreeCurrencyListResponse = HashMap<String, String>
+typealias FreeCurrencyListResponse = Map<String, String>

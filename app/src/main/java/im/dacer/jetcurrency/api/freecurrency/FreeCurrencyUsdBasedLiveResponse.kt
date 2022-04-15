@@ -1,6 +1,7 @@
 package im.dacer.jetcurrency.api.freecurrency
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import im.dacer.jetcurrency.api.LiveResponse
 import im.dacer.jetcurrency.model.CurrencyWithoutFullName
 
@@ -20,9 +21,10 @@ import im.dacer.jetcurrency.model.CurrencyWithoutFullName
  * Documentation:
  * https://github.com/fawazahmed0/currency-api
  */
+@JsonClass(generateAdapter = true)
 data class FreeCurrencyUsdBasedLiveResponse(
-    @field:SerializedName("date") val date: String,
-    @field:SerializedName("usd") val quotes: Map<String, Double>,
+    @Json(name = "date") val date: String,
+    @Json(name = "usd") val quotes: Map<String, Double>,
 ) : LiveResponse {
 
     /**

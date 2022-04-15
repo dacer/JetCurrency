@@ -1,6 +1,7 @@
 package im.dacer.jetcurrency.api.currencylayer
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import im.dacer.jetcurrency.api.LiveResponse
 import im.dacer.jetcurrency.model.CurrencyWithoutFullName
 
@@ -24,12 +25,13 @@ import im.dacer.jetcurrency.model.CurrencyWithoutFullName
  * https://currencylayer.com/documentation#api_response
  */
 // TODO make a BaseResponse that include success and error
+@JsonClass(generateAdapter = true)
 data class CurrencylayerLiveResponse(
-    @field:SerializedName("success") val success: Boolean,
-    @field:SerializedName("timestamp") val timestamp: Int,
-    @field:SerializedName("source") val source: String,
-    @field:SerializedName("quotes") val quotes: Map<String, Double>,
-    @field:SerializedName("error") val error: CurrencylayerError?,
+    @Json(name = "success") val success: Boolean,
+    @Json(name = "timestamp") val timestamp: Int,
+    @Json(name = "source") val source: String,
+    @Json(name = "quotes") val quotes: Map<String, Double>,
+    @Json(name = "error") val error: CurrencylayerError?,
 ) : LiveResponse {
 
     /**

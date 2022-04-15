@@ -1,9 +1,9 @@
 package im.dacer.jetcurrency.api.currencylayer
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
 
 data class CurrencylayerError(
-    @field:SerializedName("code") val code: Int,
-    @field:SerializedName("type") val type: String,
-    @field:SerializedName("info") val info: String,
+    @Json(name = "code") val code: Int,
+    @Json(name = "type") val type: String,
+    @Json(name = "info") val info: String,
 )
