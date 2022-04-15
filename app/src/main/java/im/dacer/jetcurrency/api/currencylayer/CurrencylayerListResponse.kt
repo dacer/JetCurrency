@@ -26,6 +26,6 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class CurrencylayerListResponse(
     @Json(name = "success") val success: Boolean,
-    @Json(name = "currencies") val currencies: HashMap<String, String>,
+    @Json(name = "currencies") val currencies: Map<String, String>,
     @Json(name = "error") val error: CurrencylayerError?,
 )

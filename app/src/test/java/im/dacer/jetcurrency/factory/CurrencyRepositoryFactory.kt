@@ -112,12 +112,12 @@ object CurrencyRepositoryFactory {
 
         fun mockListResponse(): Response<FreeCurrencyListResponse> =
             Response.success(
-                FreeCurrencyListResponse(mockRemoteCurrencyNameList.mapKeys { it.key.lowercase() })
+                mockRemoteCurrencyNameList.mapKeys { it.key.lowercase() }
             )
 
         fun mockChangedListResponse(): Response<FreeCurrencyListResponse> =
             Response.success(
-                FreeCurrencyListResponse(mockRemoteChangedCurrencyNameList.mapKeys { it.key.lowercase() })
+                mockRemoteChangedCurrencyNameList.mapKeys { it.key.lowercase() }
             )
     }
 }

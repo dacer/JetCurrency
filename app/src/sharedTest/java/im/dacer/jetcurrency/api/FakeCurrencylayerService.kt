@@ -1,19 +1,23 @@
 package im.dacer.jetcurrency.api
 
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
 import im.dacer.jetcurrency.api.currencylayer.CurrencylayerListResponse
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerListResponseJsonAdapter
 import im.dacer.jetcurrency.api.currencylayer.CurrencylayerLiveResponse
+import im.dacer.jetcurrency.api.currencylayer.CurrencylayerLiveResponseJsonAdapter
 import im.dacer.jetcurrency.api.currencylayer.CurrencylayerService
 import retrofit2.Response
 
 class FakeCurrencylayerService : CurrencylayerService {
+    private val moshi: Moshi = Moshi.Builder().build()
+
     override suspend fun live(accessKey: String): Response<CurrencylayerLiveResponse> {
-        val response = Gson().fromJson(FAKE_LIVE_RESPONSE, CurrencylayerLiveResponse::class.java)
+        val response = CurrencylayerLiveResponseJsonAdapter(moshi).fromJson(FAKE_LIVE_RESPONSE)
         return Response.success(response)
     }
 
     override suspend fun list(accessKey: String): Response<CurrencylayerListResponse> {
-        val response = Gson().fromJson(FAKE_LIST_RESPONSE, CurrencylayerListResponse::class.java)
+        val response = CurrencylayerListResponseJsonAdapter(moshi).fromJson(FAKE_LIST_RESPONSE)
         return Response.success(response)
     }
 
