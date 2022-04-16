@@ -1,9 +1,11 @@
-# JetCurrency (still under development 👷)
+<img src="graphics/feature-graphic.png" />
 
 [![<CI>](https://circleci.com/gh/dacer/JetCurrency.svg?style=shield)](https://app.circleci.com/pipelines/github/dacer/JetCurrency)
 [![<License>](https://img.shields.io/github/license/dacer/JetCurrency)](https://github.com/dacer/JetCurrency/blob/master/LICENSE)
 
 JetCurrency is a simple currency converter app built with Jetpack Compose.
+
+(still under development 👷)
 
 ## Android development
 
