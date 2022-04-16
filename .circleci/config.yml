@@ -44,8 +44,6 @@ jobs:
             mkdir -p ~/test-results/ktlint/
             find . -type f -regex ".*/build/reports/ktlint/*/.*txt" -exec cp {} ~/test-results/ktlint/ \;
           when: always
-      - store_test_results:
-          path: ~/test-results
       - store_artifacts:
           path: ~/test-results/ktlint
 
