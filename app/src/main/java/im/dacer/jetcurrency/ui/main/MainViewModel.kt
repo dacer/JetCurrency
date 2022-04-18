@@ -16,12 +16,15 @@ import im.dacer.jetcurrency.model.Currency
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -32,13 +35,8 @@ class MainViewModel @Inject constructor(
 
     private val viewModelState = MutableStateFlow(MainViewModelState(isLoading = true))
 
-    val shownCurrencyList = repository
-        .getShowingCurrencies()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            listOf()
-        )
+    private val _shownCurrencyList = MutableStateFlow(listOf<Currency>())
+    val shownCurrencyList = _shownCurrencyList.asStateFlow()
 
     val currencyList = repository
         .getAllCurrencies()
@@ -55,6 +53,14 @@ class MainViewModel @Inject constructor(
             SharingStarted.Eagerly,
             viewModelState.value.toUiState()
         )
+
+    init {
+        viewModelScope.launch(mainDispatcher) {
+            repository.getShowingCurrencies().collect {
+                _shownCurrencyList.value = it
+            }
+        }
+    }
 
     fun setFocusedCurrency(currencyCode: String) {
         viewModelState.update {
@@ -89,6 +95,30 @@ class MainViewModel @Inject constructor(
                     currentData.addToExpression(c),
                     currencyList.value,
                 )
+            )
+        }
+    }
+
+    // NOTE: It only support adjacent positions.
+    fun onSelectedCurrencyListReordered(from: Int, to: Int) {
+        if (abs(from - to) != 1) return
+        val fromCurrency = shownCurrencyList.value[from]
+        val toCurrency = shownCurrencyList.value[to]
+        val fromOrder = fromCurrency.order
+        fromCurrency.order = toCurrency.order
+        toCurrency.order = fromOrder
+
+        // We update _shownCurrencyList immediately to meet reorderable's requirement
+        _shownCurrencyList.update { list ->
+            val temp = list.toMutableList()
+            temp[from] = fromCurrency
+            temp[to] = toCurrency
+            temp.sortBy { it.order }
+            temp
+        }
+        viewModelScope.launch(mainDispatcher) {
+            repository.updateCurrencies(
+                fromCurrency, toCurrency
             )
         }
     }

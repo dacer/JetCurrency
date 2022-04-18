@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +46,10 @@ import im.dacer.jetcurrency.ui.theme.RobotoFontFamily
 import im.dacer.jetcurrency.ui.theme.drawableResource
 import im.dacer.jetcurrency.utils.WindowSize
 import im.dacer.jetcurrency.utils.toWidthWindowSize
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.draggedItem
+import org.burnoutcrew.reorderable.rememberReorderState
+import org.burnoutcrew.reorderable.reorderable
 
 @Composable
 fun CurrencyList(
@@ -55,20 +58,29 @@ fun CurrencyList(
     shownCurrencyList: List<Currency>,
     footerSpacerHeight: Dp? = null,
     extraEndPadding: Dp = 0.dp,
-    addStatusBarPadding: Boolean = true,
-    onClickCurrencyItem: (code: String) -> Unit
+    onClickCurrencyItem: (code: String) -> Unit,
+    onListReordered: (from: Int, to: Int) -> Unit,
 ) = BoxWithConstraints(modifier = modifier) {
+    val state = rememberReorderState()
     when (mainUiState) {
         is MainUiState.HasData -> {
             LazyColumn(
+                state = state.listState,
                 modifier = Modifier
                     .fillMaxSize()
+                    .reorderable(
+                        state = state,
+                        onMove = { from, to -> onListReordered(from.index - 1, to.index - 1) },
+                        // statusBar spacer cannot be reordered
+                        canDragOver = { it.index > 0 && it.index <= shownCurrencyList.size }
+                    )
             ) {
-                if (addStatusBarPadding) {
-                    item { Spacer(modifier = Modifier.statusBarsHeight()) }
-                }
-                items(shownCurrencyList) { c ->
+                item { Spacer(modifier = Modifier.statusBarsHeight()) }
+                items(shownCurrencyList, { it.code }) { c ->
                     CurrencyItem(
+                        modifier = Modifier
+                            .draggedItem(state.offsetByKey(c.code))
+                            .detectReorderAfterLongPress(state),
                         currency = c,
                         amount = mainUiState.dataMap[c.code]?.displayValue ?: "0",
                         isFocused = mainUiState.focusedCurrencyCode == c.code,
@@ -77,9 +89,7 @@ fun CurrencyList(
                         onClickCurrencyItem = onClickCurrencyItem
                     )
                 }
-                footerSpacerHeight?.let {
-                    item { Spacer(modifier = Modifier.height(it)) }
-                }
+                item { Spacer(modifier = Modifier.height(footerSpacerHeight ?: 0.dp)) }
             }
         }
         is MainUiState.NoData -> {
@@ -100,7 +110,7 @@ fun CurrencyList(
                     .fillMaxSize()
                     .then(modifier)
             ) {
-                if (addStatusBarPadding) Spacer(modifier = Modifier.statusBarsHeight())
+                Spacer(modifier = Modifier.statusBarsHeight())
                 FakeCurrencyItem(alpha)
                 FakeCurrencyItem(alpha)
             }
@@ -126,12 +136,13 @@ private fun FakeCurrencyItem(alpha: Float = 0.5f) {
 
 @Composable
 private fun CurrencyItem(
+    modifier: Modifier = Modifier,
     currency: Currency,
     amount: String = "",
     isFocused: Boolean = false,
     widthWindowSize: WindowSize = WindowSize.EXPANDED,
     extraEndPadding: Dp = 0.dp,
-    onClickCurrencyItem: (code: String) -> Unit = {}
+    onClickCurrencyItem: (code: String) -> Unit = {},
 ) {
     val mainFontSize = when (widthWindowSize) {
         WindowSize.TINY -> 16.sp
@@ -156,10 +167,10 @@ private fun CurrencyItem(
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onClickCurrencyItem.invoke(currency.code) }
-            .background(if (isFocused) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+            .background(if (isFocused) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.background)
             .padding(start = 22.dp, end = 22.dp + extraEndPadding, top = 16.dp, bottom = 16.dp)
             .navigationBarsPadding(bottom = false, end = false)
     ) {
