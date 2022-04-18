@@ -21,6 +21,7 @@ JetCurrency is an app that attempts to use the latest libraries and tools. As a 
 ## Screenshots
 
 <img src="graphics/show-details.gif" width="240" />
+<img src="graphics/adaptive-layouts.gif" width="400" />
 
 ## Download
 
