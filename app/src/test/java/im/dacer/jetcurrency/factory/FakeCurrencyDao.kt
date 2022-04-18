@@ -27,7 +27,12 @@ class FakeCurrencyDao : CurrencyDao {
             items.map { item ->
                 val c = currencies.find { it.code == item.code }
                 c?.let {
-                    return@map Currency(c.code, item.fullName, c.exchangeRateFromUsd)
+                    return@map Currency(
+                        code = c.code,
+                        fullName = item.fullName,
+                        exchangeRateFromUsd = c.exchangeRateFromUsd,
+                        order = item.order
+                    )
                 }
                 item
             }
@@ -39,7 +44,12 @@ class FakeCurrencyDao : CurrencyDao {
             items.map { item ->
                 val c = currencies.find { it.code == item.code }
                 c?.let {
-                    return@map Currency(c.code, c.fullName, c.exchangeRateFromUsd)
+                    return@map Currency(
+                        code = c.code,
+                        fullName = c.fullName,
+                        exchangeRateFromUsd = c.exchangeRateFromUsd,
+                        order = c.order
+                    )
                 }
                 item
             }

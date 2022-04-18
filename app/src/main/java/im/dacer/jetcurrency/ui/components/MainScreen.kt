@@ -98,6 +98,7 @@ fun MainScreen(
         onCurrencySelectorBack = { showCurrencySelector = false },
         onCurrencySelectorSearch = { showNotImplementedAlert = true },
         onCurrencySelectorClicked = viewModel::onCurrencyInSelectorClicked,
+        onSelectedCurrencyListReordered = viewModel::onSelectedCurrencyListReordered
     )
 }
 
@@ -124,6 +125,7 @@ private fun MainScreen(
     onCurrencySelectorBack: () -> Unit,
     onCurrencySelectorSearch: () -> Unit,
     onCurrencySelectorClicked: (currencyCode: String) -> Unit,
+    onSelectedCurrencyListReordered: (from: Int, to: Int) -> Unit,
 ) {
     Box {
         if (windowState.isLandscape && windowState.widthWindowSize > WindowSize.COMPACT) {
@@ -138,7 +140,8 @@ private fun MainScreen(
                 onLongClickBackspace,
                 onClickSettings,
                 onClickRefresh,
-                onClickFilterCurrency
+                onClickFilterCurrency,
+                onSelectedCurrencyListReordered
             )
         } else {
             PortraitMainLayout(
@@ -151,7 +154,8 @@ private fun MainScreen(
                 onLongClickBackspace,
                 onClickSettings,
                 onClickRefresh,
-                onClickFilterCurrency
+                onClickFilterCurrency,
+                onSelectedCurrencyListReordered
             )
         }
         AnimatedVisibility(
@@ -193,7 +197,8 @@ private fun PortraitMainLayout(
     onLongClickBackspace: () -> Unit,
     onClickSettings: () -> Unit,
     onClickRefresh: () -> Unit,
-    onClickFilterCurrency: () -> Unit
+    onClickFilterCurrency: () -> Unit,
+    onSelectedCurrencyListReordered: (from: Int, to: Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -206,7 +211,8 @@ private fun PortraitMainLayout(
             modifier = Modifier.weight(1f),
             footerSpacerHeight = overlappingLength,
             shownCurrencyList = shownCurrencyList,
-            onClickCurrencyItem = onFocusCurrencyItem
+            onClickCurrencyItem = onFocusCurrencyItem,
+            onListReordered = onSelectedCurrencyListReordered,
         )
         Surface(
             shadowElevation = 8.dp,
@@ -246,7 +252,8 @@ private fun LandscapeMainLayout(
     onLongClickBackspace: () -> Unit,
     onClickSettings: () -> Unit,
     onClickRefresh: () -> Unit,
-    onClickFilterCurrency: () -> Unit
+    onClickFilterCurrency: () -> Unit,
+    onSelectedCurrencyListReordered: (from: Int, to: Int) -> Unit,
 ) {
     Row(
         Modifier
@@ -259,7 +266,8 @@ private fun LandscapeMainLayout(
             modifier = Modifier.weight(1f),
             shownCurrencyList = shownCurrencyList,
             extraEndPadding = overlappingLength,
-            onClickCurrencyItem = onFocusCurrencyItem
+            onClickCurrencyItem = onFocusCurrencyItem,
+            onListReordered = onSelectedCurrencyListReordered
         )
         Surface(
             shadowElevation = 8.dp,
@@ -346,5 +354,6 @@ private fun PreviewRoot(
         onCurrencySelectorBack = {},
         onCurrencySelectorSearch = {},
         onCurrencySelectorClicked = {},
+        onSelectedCurrencyListReordered = { _, _ -> }
     )
 }
