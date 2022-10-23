@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -216,6 +215,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onSearchQueryChanged(query: String) {
+        viewModelState.update { it.copy(searchQuery = query) }
+    }
+
     /**
      * Update focused currency with focused data, also update other currencies data with latest data
      */
@@ -257,12 +260,14 @@ private data class MainViewModelState(
     val focusedCurrencyCode: String? = null,
     val isLoading: Boolean,
     val errorMessage: String? = null,
+    val searchQuery: String = "",
 ) {
     fun toUiState(): MainUiState =
         if (dataMap.isEmpty()) {
             MainUiState.NoData(
                 isLoading = isLoading,
                 errorMessage = errorMessage,
+                searchQuery = searchQuery,
             )
         } else {
             MainUiState.HasData(
@@ -270,6 +275,7 @@ private data class MainViewModelState(
                 errorMessage = errorMessage,
                 dataMap = dataMap,
                 focusedCurrencyCode = focusedCurrencyCode,
+                searchQuery = searchQuery,
             )
         }
 }
