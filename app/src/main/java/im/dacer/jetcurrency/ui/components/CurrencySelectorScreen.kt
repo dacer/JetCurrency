@@ -1,5 +1,6 @@
 package im.dacer.jetcurrency.ui.components
 
+import android.view.KeyEvent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,26 +22,29 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -63,34 +67,40 @@ fun CurrencySelectorScreen(
     modifier: Modifier = Modifier,
     isGridMode: Boolean = false,
     onBackClicked: () -> Unit,
-    onSearchClicked: () -> Unit,
+    onSearchQueryChanged: (query: String) -> Unit,
     onCurrencyClicked: (currencyCode: String) -> Unit,
 ) = BoxWithConstraints(modifier = modifier) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val widthWindowSize = maxWidth.toWidthWindowSize()
 
     Scaffold(
         modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .systemBarsPadding(top = false, bottom = false),
+            .statusBarsPadding(),
         topBar = {
             CustomTopBar(
-                isTiny = widthWindowSize == WindowSize.TINY,
-                onBackClicked, onSearchClicked, scrollBehavior
+                uiState.searchQuery,
+                onSearchQueryChanged,
+                onBackClicked,
             )
         },
         content = { innerPadding ->
             when (uiState) {
                 is MainUiState.HasData -> {
+                    val filteredCurrencyList = currencyList.filter {
+                        it.fullName.uppercase()
+                            .contains(uiState.searchQuery.uppercase()) || it.code.uppercase()
+                            .contains(
+                                uiState.searchQuery.uppercase()
+                            )
+                    }
                     if (isGridMode) {
                         LandscapeCurrencySelector(
-                            currencyList = currencyList,
+                            currencyList = filteredCurrencyList,
                             innerPadding = innerPadding,
                             onCurrencyClicked = onCurrencyClicked,
                         )
                     } else {
                         CurrencySelector(
-                            currencyList = currencyList,
+                            currencyList = filteredCurrencyList,
                             innerPadding = innerPadding,
                             widthWindowSize = widthWindowSize,
                             onCurrencyClicked = onCurrencyClicked,
@@ -114,56 +124,66 @@ fun CurrencySelectorScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CustomTopBar(
-    isTiny: Boolean,
+    text: String,
+    onTextChanged: (String) -> Unit,
     onBackClicked: () -> Unit,
-    onSearchClicked: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior
 ) {
-    if (isTiny) {
-        SmallTopAppBar(
-            title = { Text("Choose") },
-            navigationIcon = {
-                IconButton(onClick = onBackClicked) {
+    val focusManager = LocalFocusManager.current
+    TextField(
+        value = text,
+        onValueChange = {
+            onTextChanged(it)
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Rounded.ArrowBack,
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                contentDescription = "Search Icon",
+                modifier = Modifier.clickable { onBackClicked() }
+            )
+        },
+        trailingIcon = {
+            if (text.isNotEmpty()) {
+                IconButton(onClick = {
+                    onTextChanged("")
+                    focusManager.clearFocus()
+                }) {
                     Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
+                        imageVector = Icons.Rounded.Clear,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        contentDescription = "Clear Icon"
                     )
                 }
-            },
-            actions = {
-                IconButton(onClick = onSearchClicked) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
-                    )
+            }
+        },
+        textStyle = MaterialTheme.typography.headlineSmall,
+        maxLines = 1,
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        placeholder = {
+            Text(
+                "Search currencies",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.background, shape = RectangleShape)
+            .onKeyEvent {
+                if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
+                    focusManager.clearFocus()
+                    true
+                } else {
+                    false
                 }
-            },
-            scrollBehavior = scrollBehavior,
-            modifier = Modifier.statusBarsPadding()
-        )
-    } else {
-        LargeTopAppBar(
-            title = { Text("Choose currencies") },
-            navigationIcon = {
-                IconButton(onClick = onBackClicked) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = onSearchClicked) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
-                    )
-                }
-            },
-            scrollBehavior = scrollBehavior,
-            modifier = Modifier.statusBarsPadding()
-        )
-    }
+            }
+    )
 }
 
 @ExperimentalFoundationApi
@@ -316,10 +336,11 @@ private fun PreviewNoData(heightWindowSize: WindowSize = WindowSize.MEDIUM) {
         uiState = MainUiState.NoData(
             isLoading = false,
             errorMessage = null,
+            searchQuery = "",
         ),
         currencyList = listOf(),
         onBackClicked = {},
-        onSearchClicked = {},
+        onSearchQueryChanged = {},
         onCurrencyClicked = {},
     )
 }
@@ -338,6 +359,7 @@ private fun PreviewCurrencySelector(
             errorMessage = null,
             dataMap = mapOf(),
             focusedCurrencyCode = "USD",
+            searchQuery = "",
         ),
         currencyList = listOf(
             CurrencyFactory.JPY.setOrder(0),
@@ -348,7 +370,34 @@ private fun PreviewCurrencySelector(
         ),
         isGridMode = isGridMode,
         onBackClicked = {},
-        onSearchClicked = {},
+        onSearchQueryChanged = {},
+        onCurrencyClicked = {},
+    )
+}
+
+@ExperimentalFoundationApi
+@ExperimentalMaterial3Api
+@Preview("CurrencySelector")
+@Composable
+private fun PreviewFilteredCurrencySelector(
+    isGridMode: Boolean = false,
+    heightWindowSize: WindowSize = WindowSize.MEDIUM
+) {
+    CurrencySelectorScreen(
+        uiState = MainUiState.HasData(
+            isLoading = false,
+            errorMessage = null,
+            dataMap = mapOf(),
+            focusedCurrencyCode = "USD",
+            searchQuery = "Y",
+        ),
+        currencyList = listOf(
+            CurrencyFactory.JPY.setOrder(0),
+            CurrencyFactory.CNY,
+        ),
+        isGridMode = isGridMode,
+        onBackClicked = {},
+        onSearchQueryChanged = {},
         onCurrencyClicked = {},
     )
 }

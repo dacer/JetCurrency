@@ -96,7 +96,7 @@ fun MainScreen(
         onFocusCurrencyItem = viewModel::setFocusedCurrency,
         onClickFilterCurrency = { showCurrencySelector = true },
         onCurrencySelectorBack = { showCurrencySelector = false },
-        onCurrencySelectorSearch = { showNotImplementedAlert = true },
+        onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onCurrencySelectorClicked = viewModel::onCurrencyInSelectorClicked,
         onSelectedCurrencyListReordered = viewModel::onSelectedCurrencyListReordered
     )
@@ -123,7 +123,7 @@ private fun MainScreen(
     onFocusCurrencyItem: (currencyCode: String) -> Unit,
     onClickFilterCurrency: () -> Unit,
     onCurrencySelectorBack: () -> Unit,
-    onCurrencySelectorSearch: () -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
     onCurrencySelectorClicked: (currencyCode: String) -> Unit,
     onSelectedCurrencyListReordered: (from: Int, to: Int) -> Unit,
 ) {
@@ -175,7 +175,7 @@ private fun MainScreen(
                 modifier = Modifier.fillMaxHeight(),
                 isGridMode = windowState.widthWindowSize > WindowSize.COMPACT,
                 onBackClicked = onCurrencySelectorBack,
-                onSearchClicked = onCurrencySelectorSearch,
+                onSearchQueryChanged = onSearchQueryChanged,
                 onCurrencyClicked = onCurrencySelectorClicked,
             )
         }
@@ -333,6 +333,7 @@ private fun PreviewRoot(
             errorMessage = null,
             dataMap = CurrencyFactory.DataMap,
             focusedCurrencyCode = "USD",
+            searchQuery = "",
         ),
         windowState = WindowState(widthWindowSize, heightWindowSize, isLandscape),
         shownCurrencyList = listOf(
@@ -352,7 +353,7 @@ private fun PreviewRoot(
         onFocusCurrencyItem = {},
         onClickFilterCurrency = {},
         onCurrencySelectorBack = {},
-        onCurrencySelectorSearch = {},
+        onSearchQueryChanged = {},
         onCurrencySelectorClicked = {},
         onSelectedCurrencyListReordered = { _, _ -> }
     )
