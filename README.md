@@ -25,7 +25,11 @@ JetCurrency is an app that attempts to use the latest libraries and tools. As a 
 
 ## Download
 
-TBD
+<a href="https://play.google.com/store/apps/details?id=im.dacer.currency">
+    <img alt="Get it on Google Play"
+        height="80"
+        src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" />
+</a>
 
 ## Currencylayer API key
 
