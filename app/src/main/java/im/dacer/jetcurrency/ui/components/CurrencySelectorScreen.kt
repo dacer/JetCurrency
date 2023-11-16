@@ -1,6 +1,5 @@
 package im.dacer.jetcurrency.ui.components
 
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,9 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,10 +66,7 @@ fun CurrencySelectorScreen(
     onSearchClicked: () -> Unit,
     onCurrencyClicked: (currencyCode: String) -> Unit,
 ) = BoxWithConstraints(modifier = modifier) {
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
-    }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val widthWindowSize = maxWidth.toWidthWindowSize()
 
     Scaffold(
@@ -116,6 +111,7 @@ fun CurrencySelectorScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CustomTopBar(
     isTiny: Boolean,
@@ -205,18 +201,16 @@ private fun LandscapeCurrencySelector(
     innerPadding: PaddingValues,
     onCurrencyClicked: (currencyCode: String) -> Unit,
 ) {
+    val list = currencyList.sortedBy { if (it.order != null) it.order else Int.MAX_VALUE }
     LazyVerticalGrid(
-        cells = GridCells.Fixed(3),
+        columns = GridCells.Fixed(3),
         contentPadding = innerPadding
     ) {
-        items(
-            currencyList.sortedBy { if (it.order != null) it.order else Int.MAX_VALUE },
-            key = { it.code }
-        ) { currency ->
+        items(list.size) { index ->
             CurrencyRow(
-                currency = currency,
+                currency = list[index],
                 modifier = Modifier.animateItemPlacement(),
-            ) { onCurrencyClicked.invoke(currency.code) }
+            ) { onCurrencyClicked.invoke(list[index].code) }
         }
     }
 }
